@@ -66,6 +66,23 @@
       border: none;
       height: 100%;
       width: 100% !important;
+      background-color: $menuBg !important;
+    }
+
+    .el-menu-item,
+    .el-submenu__title {
+      color: $menuText !important;
+    }
+
+    .el-menu-item.is-active {
+      color: $menuActiveText !important;
+      background-color: rgba(25, 227, 163, 0.08) !important;
+      box-shadow: inset 3px 0 0 $menuActiveText;
+    }
+
+    .el-submenu.is-active > .el-submenu__title {
+      color: $menuActiveText !important;
+      background-color: rgba(25, 227, 163, 0.06) !important;
     }
 
     // menu hover
@@ -211,7 +228,7 @@
     overflow-y: auto;
 
     &::-webkit-scrollbar-track-piece {
-      background: #d3dce6;
+      background: #101924;
     }
 
     &::-webkit-scrollbar {
@@ -219,7 +236,7 @@
     }
 
     &::-webkit-scrollbar-thumb {
-      background: #99a9bf;
+      background: #2A3B4A;
       border-radius: 20px;
     }
   }

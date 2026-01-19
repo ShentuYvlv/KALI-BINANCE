@@ -194,7 +194,8 @@ export default {
       padding-left: 0;
       padding-right: 0;
       box-shadow: none !important;
-      border-bottom: 1px solid #d9d9d9;
+      border-bottom: 1px solid var(--line-strong);
+      color: var(--text-1);
       vertical-align: middle;
     }
   }

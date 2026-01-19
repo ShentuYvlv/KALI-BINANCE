@@ -82,3 +82,235 @@
 .el-range-separator {
   box-sizing: content-box;
 }
+
+// dark theme overrides
+.el-card,
+.el-dialog,
+.el-message-box,
+.el-popover,
+.el-dropdown-menu,
+.el-picker-panel,
+.el-select-dropdown {
+  background: var(--surface-1);
+  color: var(--text-1);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-1);
+}
+
+.el-dialog__title,
+.el-message-box__title {
+  color: var(--text-1);
+}
+
+.el-dialog__body,
+.el-message-box__content {
+  color: var(--text-2);
+}
+
+.el-table {
+  background: var(--surface-1) !important;
+  color: var(--text-2);
+}
+
+.el-table__header-wrapper,
+.el-table__body-wrapper,
+.el-table__footer-wrapper {
+  background: var(--surface-1) !important;
+}
+
+.el-table__header,
+.el-table__body,
+.el-table__footer,
+.el-table__header thead,
+.el-table__body tbody,
+.el-table__footer tfoot {
+  background: var(--surface-1) !important;
+}
+
+.el-table th {
+  background: var(--surface-2) !important;
+  color: var(--text-2);
+}
+
+.el-table th,
+.el-table td,
+.el-table__body tr,
+.el-table__body td,
+.el-table__header tr,
+.el-table__header th,
+.el-table__footer td {
+  background-color: var(--surface-1) !important;
+  color: var(--text-2);
+}
+
+.el-table__header th .cell {
+  color: var(--text-3);
+}
+
+.el-table td,
+.el-table th.is-leaf {
+  border-bottom: 1px solid var(--line);
+}
+
+.el-table--striped .el-table__body tr.el-table__row--striped td {
+  background: rgba(17, 27, 36, 0.8) !important;
+}
+
+.el-table__body tr:hover > td {
+  background: rgba(25, 227, 163, 0.08) !important;
+}
+
+.el-table__body tr.current-row > td {
+  background: rgba(25, 227, 163, 0.12) !important;
+}
+
+.el-table::before {
+  background-color: var(--line);
+}
+
+.el-table--border,
+.el-table--group {
+  border: 1px solid var(--line);
+}
+
+.el-table--border::after,
+.el-table--group::after,
+.el-table__fixed::before {
+  background-color: var(--line);
+}
+
+.el-table__fixed,
+.el-table__fixed-right {
+  background-color: var(--surface-1) !important;
+}
+
+.el-table__empty-block {
+  background: var(--surface-1) !important;
+  color: var(--text-3);
+}
+
+.el-table .cell {
+  color: var(--text-2);
+}
+
+.el-input__inner,
+.el-textarea__inner,
+.el-select .el-input__inner {
+  background-color: var(--surface-2);
+  border-color: var(--line);
+  color: var(--text-1);
+  border-radius: var(--radius-input);
+}
+
+.el-input__inner::placeholder,
+.el-textarea__inner::placeholder {
+  color: var(--text-3);
+}
+
+.el-input__inner:focus,
+.el-textarea__inner:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(25, 227, 163, 0.18);
+}
+
+.el-select-dropdown__item {
+  color: var(--text-2);
+}
+
+.el-select-dropdown__item.hover,
+.el-select-dropdown__item:hover {
+  background: rgba(25, 227, 163, 0.12);
+  color: var(--text-1);
+}
+
+.el-form-item__label {
+  color: var(--text-2);
+}
+
+.el-button {
+  border-radius: var(--radius-btn);
+  border-color: var(--line);
+  color: var(--text-2);
+  background: transparent;
+}
+
+.el-button--primary {
+  background-color: #19E3A3;
+  border-color: #19E3A3;
+  color: #0B1117;
+}
+
+.el-button--primary:hover,
+.el-button--primary:focus {
+  background-color: #1AF0AD;
+  border-color: #1AF0AD;
+}
+
+.el-button--danger {
+  background-color: #FF6B6B;
+  border-color: #FF6B6B;
+  color: #0B1117;
+}
+
+.el-button--danger:hover,
+.el-button--danger:focus {
+  background-color: #FF7C7C;
+  border-color: #FF7C7C;
+}
+
+.el-pagination,
+.el-pagination__total,
+.el-pagination__sizes,
+.el-pagination__jump {
+  color: var(--text-2);
+}
+
+.el-pagination .btn-prev,
+.el-pagination .btn-next {
+  background: transparent;
+  color: var(--text-2);
+}
+
+.el-pager li {
+  background: transparent;
+  color: var(--text-2);
+  border: 1px solid transparent;
+}
+
+.el-pager li.active {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: rgba(25, 227, 163, 0.08);
+}
+
+.el-tabs__item {
+  color: var(--text-2);
+}
+
+.el-tabs__item.is-active {
+  color: var(--accent);
+}
+
+.el-tabs__active-bar {
+  background-color: var(--accent);
+}
+
+.el-tabs__nav-wrap::after {
+  background-color: var(--line);
+}
+
+.el-dropdown-menu__item {
+  color: var(--text-2);
+}
+
+.el-dropdown-menu__item:focus,
+.el-dropdown-menu__item:not(.is-disabled):hover {
+  background-color: rgba(25, 227, 163, 0.12);
+  color: var(--text-1);
+}
+
+.el-tag {
+  border-color: rgba(25, 227, 163, 0.3);
+  color: var(--accent);
+  background: rgba(25, 227, 163, 0.12);
+}

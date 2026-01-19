@@ -4,20 +4,22 @@
 **/
 
 /* theme color */
-$--color-primary: #1890ff;
-$--color-success: #13ce66;
-$--color-warning: #ffba00;
-$--color-danger: #ff4949;
-// $--color-info: #1E1E1E;
+$--color-primary: #19E3A3;
+$--color-success: #1FD49C;
+$--color-warning: #F7B955;
+$--color-danger: #FF6B6B;
+$--color-info: #8EA2B8;
 
-$--button-font-weight: 400;
+$--button-font-weight: 500;
 
-// $--color-text-regular: #1f2d3d;
+$--color-text-regular: #CBD6E2;
+$--color-text-placeholder: #8EA2B8;
+$--background-color-base: #0E151D;
 
-$--border-color-light: #dfe4ed;
-$--border-color-lighter: #e6ebf5;
+$--border-color-light: #223040;
+$--border-color-lighter: #1A2430;
 
-$--table-border: 1px solid #dfe6ec;
+$--table-border: 1px solid #223040;
 
 /* icon font path, required */
 $--font-path: "~element-ui/lib/theme-chalk/fonts";
