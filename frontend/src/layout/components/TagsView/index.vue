@@ -201,9 +201,9 @@ export default {
 
 <style lang="scss" scoped>
 .tags-view-container {
-  height: 34px;
+  height: 40px;
   width: 100%;
-  background: var(--bg-1);
+  background: linear-gradient(180deg, #0E151D 0%, #0C1219 100%);
   border-bottom: 1px solid var(--line);
   box-shadow: 0 1px 0 rgba(3, 10, 18, 0.2);
   .tags-view-wrapper {
@@ -211,15 +211,23 @@ export default {
       display: inline-block;
       position: relative;
       cursor: pointer;
-      height: 26px;
-      line-height: 26px;
-      border: 1px solid var(--line);
+      height: 28px;
+      line-height: 28px;
+      border: 1px solid transparent;
       color: var(--text-2);
-      background: var(--surface-1);
-      padding: 0 8px;
+      background: var(--surface-2);
+      padding: 0 12px;
       font-size: 12px;
-      margin-left: 5px;
-      margin-top: 4px;
+      font-weight: 500;
+      margin-left: 6px;
+      margin-top: 6px;
+      border-radius: var(--radius-chip);
+      transition: color 0.2s ease, background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+      &:hover {
+        color: var(--text-1);
+        background: var(--hover-bg);
+        border-color: var(--hover-border);
+      }
       &:first-of-type {
         margin-left: 15px;
       }
@@ -227,9 +235,10 @@ export default {
         margin-right: 15px;
       }
       &.active {
-        background-color: rgba(25, 227, 163, 0.16);
+        background-color: rgba(41, 230, 165, 0.16);
         color: var(--text-1);
-        border-color: var(--accent);
+        border-color: rgba(41, 230, 165, 0.6);
+        box-shadow: 0 6px 14px rgba(41, 230, 165, 0.12);
         &::before {
           content: '';
           background: var(--accent);
@@ -238,7 +247,7 @@ export default {
           height: 8px;
           border-radius: 50%;
           position: relative;
-          margin-right: 2px;
+          margin-right: 4px;
         }
       }
     }
@@ -250,7 +259,7 @@ export default {
     position: absolute;
     list-style-type: none;
     padding: 5px 0;
-    border-radius: 8px;
+    border-radius: var(--radius-card);
     font-size: 12px;
     font-weight: 400;
     color: var(--text-2);
@@ -261,7 +270,7 @@ export default {
       padding: 7px 16px;
       cursor: pointer;
       &:hover {
-        background: rgba(25, 227, 163, 0.12);
+        background: var(--hover-bg);
       }
     }
   }
@@ -286,7 +295,7 @@ export default {
         vertical-align: -3px;
       }
       &:hover {
-        background-color: rgba(25, 227, 163, 0.2);
+        background-color: rgba(41, 230, 165, 0.2);
         color: var(--text-1);
       }
     }

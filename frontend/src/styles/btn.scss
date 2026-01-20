@@ -45,14 +45,14 @@
   font-size: 14px;
   color: #0B1117;
   padding: 14px 36px;
-  border-radius: 8px;
-  border: 1px solid rgba(25, 227, 163, 0.35);
+  border-radius: var(--radius-btn);
+  border: 1px solid rgba(41, 230, 165, 0.4);
   outline: none;
   transition: 600ms ease all;
   position: relative;
   display: inline-block;
   background: $blue;
-  box-shadow: 0 8px 20px rgba(3, 10, 18, 0.35);
+  box-shadow: 0 10px 20px rgba(3, 10, 18, 0.35);
 
   &:hover {
     background: lighten($blue, 4%);
@@ -101,4 +101,11 @@
   font-size: 14px;
   border-radius: var(--radius-btn);
   border: 1px solid var(--line);
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.custom-button:hover {
+  background: var(--surface-3);
+  border-color: var(--hover-border);
+  color: var(--text-1);
 }

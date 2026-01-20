@@ -91,7 +91,7 @@ export default {
   height: 50px;
   overflow: hidden;
   position: relative;
-  background: var(--bg-1);
+  background: linear-gradient(90deg, #0E151D 0%, #101A24 60%, #0F1823 100%);
   border-bottom: 1px solid var(--line);
   box-shadow: 0 1px 0 rgba(3, 10, 18, 0.2);
 
@@ -102,6 +102,8 @@ export default {
     cursor: pointer;
     transition: background .3s;
     -webkit-tap-highlight-color:transparent;
+    padding: 0 10px;
+    border-radius: 10px;
 
     &:hover {
       background: rgba(25, 227, 163, 0.08)
@@ -128,18 +130,22 @@ export default {
 
     .right-menu-item {
       display: inline-block;
-      padding: 0 8px;
+      padding: 0 10px;
+      margin: 0 4px;
       height: 100%;
-      font-size: 18px;
+      font-size: 16px;
       color: var(--text-2);
       vertical-align: text-bottom;
+      border-radius: 10px;
+      transition: background 0.2s ease, color 0.2s ease;
 
       &.hover-effect {
         cursor: pointer;
         transition: background .3s;
 
         &:hover {
-          background: rgba(25, 227, 163, 0.08)
+          background: var(--hover-bg);
+          color: var(--text-1);
         }
       }
     }
@@ -150,6 +156,10 @@ export default {
       .avatar-wrapper {
         margin-top: 5px;
         position: relative;
+        background: var(--surface-2);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 2px;
 
         .user-avatar {
           cursor: pointer;

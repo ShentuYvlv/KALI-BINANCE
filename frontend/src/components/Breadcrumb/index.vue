@@ -74,13 +74,24 @@ export default {
 <style lang="scss" scoped>
 .app-breadcrumb.el-breadcrumb {
   display: inline-block;
-  font-size: 14px;
+  font-size: 13px;
   line-height: 50px;
   margin-left: 8px;
+  color: var(--text-2);
+  font-family: var(--font-display);
 
   .no-redirect {
-    color: #97a8be;
+    color: var(--text-3);
     cursor: text;
+  }
+
+  a {
+    color: var(--text-2);
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: var(--text-1);
+    }
   }
 }
 </style>

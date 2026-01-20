@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap');
 @import './variables.scss';
 @import './mixin.scss';
 @import './transition.scss';
@@ -7,25 +7,35 @@
 @import './btn.scss';
 
 :root {
+  --font-sans: "Space Grotesk", "Noto Sans SC", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", Arial, sans-serif;
+  --font-display: "Space Grotesk", "Noto Sans SC", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", Arial, sans-serif;
   --bg-0: #0B1117;
-  --bg-1: #0E151D;
-  --surface-1: #111B24;
-  --surface-2: #15212C;
-  --line: rgba(160, 186, 210, 0.12);
-  --line-strong: rgba(160, 186, 210, 0.2);
-  --text-1: #E7EEF8;
-  --text-2: #B7C4D6;
-  --text-3: #8EA2B8;
-  --icon: #7E93A8;
-  --accent: #19E3A3;
-  --accent-2: #33C6E8;
+  --bg-1: #0D131B;
+  --surface-1: #0F1720;
+  --surface-2: #121C26;
+  --surface-3: #16212D;
+  --line: rgba(149, 176, 203, 0.12);
+  --line-strong: rgba(149, 176, 203, 0.22);
+  --text-1: #E6EEF7;
+  --text-2: #B3C2D4;
+  --text-3: #7F93A8;
+  --icon: #7D92A8;
+  --accent: #29E6A5;
+  --accent-2: #35C9E8;
+  --accent-soft: rgba(41, 230, 165, 0.12);
+  --accent-strong: rgba(41, 230, 165, 0.24);
   --success: #1FD49C;
   --warning: #F7B955;
   --danger: #FF6B6B;
   --shadow-1: 0 8px 24px rgba(3, 10, 18, 0.45);
-  --radius-card: 10px;
-  --radius-input: 6px;
-  --radius-btn: 8px;
+  --shadow-2: 0 12px 30px rgba(3, 10, 18, 0.55);
+  --radius-card: 16px;
+  --radius-input: 12px;
+  --radius-btn: 14px;
+  --radius-chip: 14px;
+  --radius-pill: 999px;
+  --hover-bg: rgba(41, 230, 165, 0.08);
+  --hover-border: rgba(41, 230, 165, 0.32);
 }
 
 body {
@@ -33,13 +43,14 @@ body {
   -moz-osx-font-smoothing: grayscale;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
-  font-family: "Sora", "Noto Sans SC", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", Arial, sans-serif;
-  background: radial-gradient(1200px 800px at 10% 10%, #101a24 0%, #0B1117 55%, #0A1016 100%);
+  font-family: var(--font-sans);
+  background: radial-gradient(1200px 800px at 12% 8%, #101a25 0%, #0B1117 55%, #0A1016 100%);
   color: var(--text-1);
+  letter-spacing: 0.2px;
 }
 
 label {
-  font-weight: 700;
+  font-weight: 600;
   color: var(--text-2);
 }
 
@@ -78,10 +89,18 @@ a:hover {
   cursor: pointer;
   color: var(--text-1);
   text-decoration: none;
+  transition: color 0.2s ease;
 }
 
 div:focus {
   outline: none;
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: var(--font-sans);
 }
 
 .fr {
@@ -133,7 +152,7 @@ aside {
   display: block;
   line-height: 32px;
   font-size: 16px;
-  font-family: "Sora", "Noto Sans SC", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", Arial, sans-serif;
+  font-family: var(--font-sans);
   color: var(--text-2);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -146,6 +165,17 @@ aside {
       color: var(--accent-2);
     }
   }
+}
+
+h1,
+h2,
+h3,
+h4,
+.page-title,
+.el-dialog__title,
+.el-message-box__title {
+  font-family: var(--font-display);
+  letter-spacing: 0.2px;
 }
 
 //main-container全局样式

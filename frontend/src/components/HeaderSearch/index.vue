@@ -173,10 +173,18 @@ export default {
 <style lang="scss" scoped>
 .header-search {
   font-size: 0 !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   .search-icon {
     cursor: pointer;
     font-size: 18px;
     vertical-align: middle;
+    color: var(--icon);
+    transition: color 0.2s ease;
+    &:hover {
+      color: var(--accent);
+    }
   }
   .header-search-select {
     font-size: 18px;
@@ -184,24 +192,31 @@ export default {
     width: 0;
     overflow: hidden;
     background: transparent;
-    border-radius: 0;
+    border-radius: var(--radius-pill);
     display: inline-block;
     vertical-align: middle;
 
     ::v-deep .el-input__inner {
-      border-radius: 0;
-      border: 0;
-      padding-left: 0;
-      padding-right: 0;
+      border-radius: var(--radius-pill);
+      border: 1px solid transparent;
+      padding-left: 12px;
+      padding-right: 12px;
+      height: 30px;
       box-shadow: none !important;
-      border-bottom: 1px solid var(--line-strong);
+      background: var(--surface-2);
+      border-color: var(--line);
       color: var(--text-1);
       vertical-align: middle;
+    }
+
+    ::v-deep .el-input__inner:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(41, 230, 165, 0.18);
     }
   }
   &.show {
     .header-search-select {
-      width: 210px;
+      width: 220px;
       margin-left: 10px;
     }
   }
