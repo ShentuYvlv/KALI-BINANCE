@@ -3,7 +3,6 @@ package controllers
 import (
 	"encoding/json"
 	"math"
-	"sort"
 	"strconv"
 	"strings"
 
@@ -71,7 +70,15 @@ func (ctrl *FeatureController) Get() {
 		query = query.Filter("pin", 1)
 		countQuery = countQuery.Filter("pin", 1)
 	}
-	_, err := query.OrderBy("-Pin", "ID").Limit(limit, offset).All(&symbols,
+	orderFields := []string{"-Pin", "ID"}
+	if strings.HasPrefix(paramsSort, "percent_change") {
+		if paramsSort == "percent_change+" {
+			orderFields = []string{"-Pin", "-PercentChange", "ID"}
+		} else if paramsSort == "percent_change-" {
+			orderFields = []string{"-Pin", "PercentChange", "ID"}
+		}
+	}
+	_, err := query.OrderBy(orderFields...).Limit(limit, offset).All(&symbols,
 		"ID", "Symbol", "PercentChange", "Close", "Open", "Low", "High", "Enable", "UpdateTime", "QuoteVolume", "TradeCount", "Leverage", "MarginType",
 		"StepSize", "TickSize", "Usdt", "Profit", "Loss", "StrategyType", "Pin", "Sort", "Type",
 	)
@@ -83,20 +90,6 @@ func (ctrl *FeatureController) Get() {
 		ctrl.Ctx.Resp(utils.ResJson(400, nil, err.Error()))
 	}
 	
-	// TODO: 分页之后这里有问题
-	if strings.HasPrefix(paramsSort, "percent_change") {
-		sort.SliceStable(symbols, func(i, j int) bool {
-			base := symbols[i].Pin >= symbols[j].Pin
-			if paramsSort == "percent_change+" {
-				return base && symbols[i].PercentChange >= symbols[j].PercentChange // 涨幅从大到小排序
-			} else if paramsSort == "percent_change-" {
-				return base && symbols[i].PercentChange < symbols[j].PercentChange // 涨幅从小到大排序
-			} else {
-				return true
-			}
-		})
-	}
-
 	ctrl.Ctx.Resp(map[string]interface{} {
 		"code": 200,
 		"data": map[string]interface{} {

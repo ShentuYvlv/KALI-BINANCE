@@ -169,6 +169,8 @@
             width="90"
             show-overflow-tooltip
             prop="percent_change"
+            sortable="custom"
+            :sort-orders="['descending', 'ascending', null]"
           >
             <template slot-scope="scope">
               <span v-if="scope.row.percentChange < 0" style="color: red;">{{ scope.row.percentChange }}%↓ </span>
@@ -384,12 +386,13 @@
             </template>
           </el-table-column>
           <el-table-column
-            label="24h↑↓"
+            label="24h"
             align="center"
             width="90"
             show-overflow-tooltip
             prop="percent_change"
             sortable="custom"
+            :sort-orders="['descending', 'ascending', null]"
           >
             <template slot-scope="scope">
               <span v-if="scope.row.percentChange < 0" style="color: red;">{{ scope.row.percentChange }}%↓ </span>
@@ -1606,7 +1609,7 @@ export default {
       if (!order) {
         this.sort = ''
       } else {
-        this.sort = prop + (order === 'ascending' ? '+' : '-')
+        this.sort = prop + (order === 'ascending' ? '-' : '+')
       }
       this.fetchData()
     },
