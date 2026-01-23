@@ -13,6 +13,7 @@ import (
 	"math"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/adshao/go-binance/v2/futures"
@@ -781,6 +782,7 @@ func UpdateSymbolsFundingRates(systemConfig models.Config) {
 	res, err := binance.GetFundingRate(binance.FundingRateParams{})
 	if err == nil {
 		o := orm.NewOrm()
+		ensureFundingRateSchema(o)
 		for _, symbol := range res {
 			// 非usdt结尾的不需要
 			if strings.HasSuffix(symbol.Symbol, "USDT") {
@@ -793,6 +795,7 @@ func UpdateSymbolsFundingRates(systemConfig models.Config) {
 						Enable: 1,
 						NowFundingRate: symbol.LastFundingRate,
 						NowFundingTime: symbol.Time,
+						NextFundingTime: symbol.NextFundingTime,
 						NowPrice: symbol.MarkPrice,
 						LastNoticeFundingRate: "0.0",
 						LastNoticeFundingTime: 0,
@@ -802,12 +805,26 @@ func UpdateSymbolsFundingRates(systemConfig models.Config) {
 					// edit
 					fundingRate.NowFundingRate = symbol.LastFundingRate
 					fundingRate.NowFundingTime = symbol.Time
+					fundingRate.NextFundingTime = symbol.NextFundingTime
 					fundingRate.NowPrice = symbol.MarkPrice
 					orm.NewOrm().Update(&fundingRate)
 				}
 			}
 		}
 	}
+}
+
+var fundingRateSchemaChecked = false
+var fundingRateSchemaLock = sync.Mutex{}
+
+func ensureFundingRateSchema(o orm.Ormer) {
+	fundingRateSchemaLock.Lock()
+	defer fundingRateSchemaLock.Unlock()
+	if fundingRateSchemaChecked {
+		return
+	}
+	_, _ = o.Raw("ALTER TABLE symbol_funding_rates ADD COLUMN next_funding_time INTEGER DEFAULT 0").Exec()
+	fundingRateSchemaChecked = true
 }
 
 // 获取币的策略

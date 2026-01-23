@@ -71,6 +71,15 @@
         </template>
       </el-table-column>
       <el-table-column
+        label="下次结算时间"
+        align="center"
+        show-overflow-tooltip
+      >
+        <template slot-scope="scope">
+          {{ scope.row.next_funding_time ? parseTime(scope.row.next_funding_time) : '-' }}
+        </template>
+      </el-table-column>
+      <el-table-column
         :label="$t('trade.nowPrice')"
         align="center"
         show-overflow-tooltip

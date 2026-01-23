@@ -150,6 +150,7 @@ type SymbolFundingRates struct {
 	Enable int `orm:"column(enable)" json:"enable"` // 是否开启
 	NowFundingRate string `orm:"column(now_funding_rate)" json:"now_funding_rate"` // 当前资金费率
 	NowFundingTime int64 `orm:"column(now_funding_time)" json:"now_funding_time"` // 当前资金费率时间
+	NextFundingTime int64 `orm:"column(next_funding_time)" json:"next_funding_time"` // 下次结算时间
 	NowPrice string `orm:"column(now_price)" json:"now_price"` // 当前价格
 	LastNoticeFundingRate string `orm:"column(last_notice_funding_rate)" json:"last_notice_funding_rate"` // 上次报警时的资金费率
 	LastNoticeFundingTime int64 `orm:"column(last_notice_funding_time)" json:"last_notice_funding_time"` // 上次报警时资金费率时间
