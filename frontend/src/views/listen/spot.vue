@@ -40,12 +40,24 @@
         </template>
       </el-table-column>
       <el-table-column
+        :label="$t('trade.listenType')"
+        align="center"
+        width="130"
+      >
+        <template slot-scope="scope">
+          <el-select v-model="scope.row.listen_type" size="small" @change="edit(scope.row)">
+            <el-option :label="$t('trade.klineBase')" value="kline_base" />
+            <el-option label="价格通知" value="price_notice" />
+          </el-select>
+        </template>
+      </el-table-column>
+      <el-table-column
         :label="$t('trade.klineInterval')"
         align="center"
         width="110"
       >
         <template slot-scope="scope">
-          <el-select v-model="scope.row.kline_interval" size="small" @change="edit(scope.row)">
+          <el-select v-if="scope.row.listen_type !== 'price_notice'" v-model="scope.row.kline_interval" size="small" @change="edit(scope.row)">
             <el-option label="1m" value="1m" />
             <el-option label="3m" value="3m" />
             <el-option label="5m" value="5m" />
@@ -71,6 +83,7 @@
       >
         <template slot-scope="scope">
           <el-input
+            v-if="scope.row.listen_type !== 'price_notice'"
             v-model="scope.row.change_percent"
             class="edit-input"
             size="small"
@@ -79,13 +92,90 @@
         </template>
       </el-table-column>
       <el-table-column
-        :label="$t('trade.changePercent')"
+        :label="$t('trade.noticeLimitMin')"
         align="center"
         width="140"
       >
         <template slot-scope="scope">
           <el-input
+            v-if="scope.row.listen_type !== 'price_notice'"
             v-model="scope.row.notice_limit_min"
+            class="edit-input"
+            size="small"
+            @blur="edit(scope.row)"
+          />
+        </template>
+      </el-table-column>
+      <el-table-column
+        :label="$t('trade.positionSide')"
+        align="center"
+        width="110"
+      >
+        <template slot-scope="scope">
+          <el-select v-if="scope.row.listen_type === 'price_notice'" v-model="scope.row.side" size="small" @change="edit(scope.row)">
+            <el-option :label="$t('trade.buy')" value="buy" />
+            <el-option :label="$t('trade.sell')" value="sell" />
+          </el-select>
+        </template>
+      </el-table-column>
+      <el-table-column
+        :label="$t('trade.noticePrice')"
+        align="center"
+        width="130"
+      >
+        <template slot-scope="scope">
+          <el-input
+            v-if="scope.row.listen_type === 'price_notice'"
+            v-model="scope.row.notice_price"
+            class="edit-input"
+            size="small"
+            @blur="edit(scope.row)"
+          />
+        </template>
+      </el-table-column>
+      <el-table-column
+        :label="$t('trade.hasNotice')"
+        align="center"
+        width="100"
+      >
+        <template slot-scope="scope">
+          <span v-if="scope.row.listen_type === 'price_notice'">
+            {{ scope.row.has_notice == '1' ? $t('trade.yes') : $t('trade.no') }}
+          </span>
+        </template>
+      </el-table-column>
+      <el-table-column :label="$t('trade.autoTrade')" align="center" width="100">
+        <template slot-scope="scope">
+          <el-select v-if="scope.row.listen_type === 'price_notice'" v-model="scope.row.auto_order" size="small" @change="edit(scope.row)">
+            <el-option :label="$t('trade.yes')" :value="1" />
+            <el-option :label="$t('trade.no')" :value="0" />
+          </el-select>
+        </template>
+      </el-table-column>
+      <el-table-column
+        :label="$t('trade.usdt')"
+        align="center"
+        width="100"
+      >
+        <template slot-scope="scope">
+          <el-input
+            v-if="scope.row.listen_type === 'price_notice'"
+            v-model="scope.row.usdt"
+            class="edit-input"
+            size="small"
+            @blur="edit(scope.row)"
+          />
+        </template>
+      </el-table-column>
+      <el-table-column
+        :label="$t('trade.amount')"
+        align="center"
+        width="100"
+      >
+        <template slot-scope="scope">
+          <el-input
+            v-if="scope.row.listen_type === 'price_notice'"
+            v-model="scope.row.quantity"
             class="edit-input"
             size="small"
             @blur="edit(scope.row)"
@@ -138,6 +228,15 @@
       >
         <el-form-item :label="$t('trade.coin')" prop="symbol">
           <symbol-suggest-input v-model="info.symbol" />
+        </el-form-item>
+        <el-form-item :label="$t('trade.listenType')" prop="listen_type">
+          <el-select v-model="info.listen_type" size="small">
+            <el-option :label="$t('trade.klineBase')" value="kline_base" />
+            <el-option label="价格通知" value="price_notice" />
+          </el-select>
+        </el-form-item>
+        <el-form-item v-if="info.listen_type === 'price_notice'" :label="$t('trade.noticePrice')" prop="notice_price">
+          <el-input v-model="info.notice_price" />
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -204,9 +303,10 @@ export default {
       // this.listLoading = false
     },
     async edit(row) {
-      const { id, enable, kline_interval, notice_limit_min, change_percent } = row
+      const { id, enable, notice_limit_min, ...other } = row
       try {
-        await setListenCoin(id, { kline_interval, notice_limit_min: Number(notice_limit_min), change_percent, enable: enable ? 1 : 0 })
+        const limit = row.listen_type === 'price_notice' ? 0 : Number(notice_limit_min)
+        await setListenCoin(id, { notice_limit_min: limit, enable: enable ? 1 : 0, ...other })
         this.$message({ message: this.$t('table.actionSuccess'), type: 'success' })
         await this.fetchData()
       } catch (e) {
@@ -231,6 +331,15 @@ export default {
     },
     openDialog() {
       this.dialogTitle = this.$t('table.add')
+      this.info = {
+        symbol: '',
+        listen_type: 'kline_base',
+        notice_price: '',
+        side: 'buy',
+        auto_order: 1,
+        usdt: '10',
+        quantity: '0',
+      }
       this.dialogFormVisible = true
     },
     async addCoin(row) {

@@ -86,7 +86,8 @@ const tradeRouter = [
   {
     path: '/notice',
     component: Layout,
-    redirect: '/notice/coin',
+    redirect: '/listen/spot',
+    hidden: true,
     meta: { title: 'coinNotice', icon: 'table' },
     children: [
       {

@@ -6,8 +6,10 @@ import (
 	"strconv"
 
 	"go_binance_futures/feature/api/binance"
+	"go_binance_futures/feature"
 	"go_binance_futures/feature/strategy/line"
 	"go_binance_futures/models"
+	"go_binance_futures/spot"
 	"go_binance_futures/technology"
 	"go_binance_futures/utils"
 
@@ -87,11 +89,43 @@ func (ctrl *ListenCoinController) Post() {
 	ctrl.BindJSON(&symbols)
 	
 	symbols.Enable = 0 // 默认不开启
-	symbols.KlineInterval = "1m" // 默认k线周期
-	symbols.ChangePercent = "1.1" // 1.1% 默认变化幅度
 	symbols.LastNoticeTime = 0 // 最后一次通知时间
-	symbols.NoticeLimitMin = 5 // 最小通知间隔
-	symbols.ListenType = "kline_base"
+	if symbols.ListenType == "" {
+		symbols.ListenType = "kline_base"
+	}
+	if symbols.ListenType == "price_notice" {
+		symbols.HasNotice = 0
+		symbols.AutoOrder = 1
+		symbols.ProfitPrice = "0"
+		symbols.LossPrice = "0"
+		symbols.Leverage = 3
+		symbols.MarginType = "ISOLATED"
+		symbols.Usdt = "10"
+		symbols.Side = "buy"
+		symbols.Quantity = "0"
+		symbols.NoticeLimitMin = 0
+		symbols.ChangePercent = "0"
+		symbols.KlineInterval = ""
+		if symbols.Type == 1 {
+			tickSize, stepSize := spot.GetCoinOrderSize(symbols.Symbol)
+			symbols.TickSize = tickSize
+			symbols.StepSize = stepSize
+		} else {
+			tickSize, stepSize := feature.GetCoinOrderSize(symbols.Symbol)
+			symbols.TickSize = tickSize
+			symbols.StepSize = stepSize
+		}
+	} else {
+		if symbols.KlineInterval == "" {
+			symbols.KlineInterval = "1m"
+		}
+		if symbols.ChangePercent == "" {
+			symbols.ChangePercent = "1.1"
+		}
+		if symbols.NoticeLimitMin == 0 {
+			symbols.NoticeLimitMin = 5
+		}
+	}
 
 	o := orm.NewOrm()
 	id, err := o.Insert(symbols)

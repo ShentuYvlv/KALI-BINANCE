@@ -121,44 +121,10 @@
         </template>
       </el-table-column>
     </el-table>
-    <el-dialog :title="dialogTitle" :visible.sync="dialogHistoryVisible">
-      <el-table
-        :data="history"
-        element-loading-text="Loading"
-        border
-        fit
-        size="mini"
-        highlight-current-row
-        style="height:500px;overflow-y:scroll;"
-      >
-        <el-table-column
-          :label="$t('trade.fundRate')"
-          align="center"
-          show-overflow-tooltip
-        >
-          <template slot-scope="scope">
-            <span :style="{color: Math.abs(round(scope.row.fundingRate * 100, 4)) > 1 ? 'red' : 'green' }">{{ round(scope.row.fundingRate * 100, 4) }}</span>
-          </template>
-        </el-table-column>
-        <el-table-column
-          :label="$t('trade.time')"
-          align="center"
-          show-overflow-tooltip
-        >
-          <template slot-scope="scope">
-            {{ parseTime(scope.row.fundingTime) }}
-          </template>
-        </el-table-column>
-        <el-table-column
-          :label="$t('trade.price')"
-          align="center"
-          show-overflow-tooltip
-        >
-          <template slot-scope="scope">
-            {{ scope.row.markPrice }}
-          </template>
-        </el-table-column>
-      </el-table>
+    <el-dialog :title="dialogTitle" :visible.sync="dialogHistoryVisible" width="80%">
+      <div style="height: 520px;">
+        <apexchart type="line" height="520" :options="historyOptions" :series="historySeries" />
+      </div>
     </el-dialog>
   </div>
 </template>
@@ -166,17 +132,54 @@
 <script>
 import { getFundingRates, getFundingRateHistory, editFundingRates } from '@/api/listenCoin'
 import SymbolSuggestInput from '@/components/SymbolSuggestInput'
+import VueApexCharts from 'vue-apexcharts'
 import { parseTime } from '@/utils'
 import { round } from 'mathjs'
 
 export default {
   components: {
     SymbolSuggestInput,
+    apexchart: VueApexCharts,
   },
   data() {
     return {
       list: [],
       history: [],
+      historyMeta: [],
+      historySeries: [
+        { name: this.$t('trade.fundRate'), data: [] },
+      ],
+      historyOptions: {
+        chart: {
+          type: 'line',
+          toolbar: { show: true },
+          zoom: { enabled: true },
+          foreColor: '#B3C2D4',
+        },
+        stroke: {
+          width: 2,
+          curve: 'smooth',
+        },
+        grid: {
+          borderColor: 'rgba(149, 176, 203, 0.12)',
+        },
+        xaxis: {
+          type: 'datetime',
+          labels: {
+            datetimeUTC: false,
+            style: { colors: '#8EA2B8' },
+          },
+        },
+        yaxis: {
+          labels: {
+            formatter: (val) => `${Number(val).toFixed(4)}%`,
+            style: { colors: '#8EA2B8' },
+          },
+        },
+        tooltip: {
+          custom: null,
+        },
+      },
       sort: '+',
       listLoading: false,
       search: {
@@ -193,6 +196,7 @@ export default {
   async created() {
     await this.fetchData()
     this.timeId = setInterval(() => this.fetchData(), 30 * 1000)
+    this.historyOptions.tooltip.custom = this.buildHistoryTooltip
   },
   beforeDestroy() {
     clearInterval(this.timeId)
@@ -223,7 +227,34 @@ export default {
       const { data } = await getFundingRateHistory({
         symbol: row.symbol,
       })
-      this.history = data.reverse() // 数据从最新到最旧
+      const history = data.reverse() // 数据从最新到最旧
+      this.history = history
+      this.historyMeta = history
+      this.historySeries = [
+        {
+          name: this.$t('trade.fundRate'),
+          data: history.map(item => ({
+            x: item.fundingTime,
+            y: round(item.fundingRate * 100, 4),
+          })),
+        },
+      ]
+    },
+    buildHistoryTooltip({ dataPointIndex }) {
+      const item = this.historyMeta[dataPointIndex]
+      if (!item) {
+        return ''
+      }
+      const rate = round(item.fundingRate * 100, 4)
+      const time = this.parseTime(item.fundingTime)
+      const price = item.markPrice
+      return `
+        <div style="padding:8px 10px;background:#0F1720;border:1px solid rgba(149,176,203,0.18);border-radius:8px;">
+          <div style="font-size:12px;color:#8EA2B8;margin-bottom:4px;">${time}</div>
+          <div style="font-size:14px;color:#E6EEF7;">资金费率：${rate}%</div>
+          <div style="font-size:12px;color:#B3C2D4;margin-top:2px;">标记价格：${price}</div>
+        </div>
+      `
     },
     async edit(row) {
       const { id, enable, ...data } = row

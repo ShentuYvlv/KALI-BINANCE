@@ -52,6 +52,8 @@ func ListenCoin(systemConfig models.Config) {
 				klineKcListen(coin)
 			case "custom":
 				klineCustomListen(coin)
+			case "price_notice":
+				continue
 			default:
 				logs.Error("listen type error:", coin.ListenType)
 		}

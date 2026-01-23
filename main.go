@@ -113,6 +113,10 @@ func syncDb() {
 		orm.NewOrm().Update(&config)
 	}
 	SystemConfig = config
+
+	// merge notice into listen schema/data
+	models.EnsureListenSchema()
+	models.MigrateNoticeToListen()
 }
 
 func registerMiddlewares() {
@@ -312,5 +316,4 @@ func main() {
 	// web
 	web.Run(":" + webPort)
 }
-
 

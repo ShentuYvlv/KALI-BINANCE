@@ -138,6 +138,18 @@ type ListenSymbols struct {
 	LastNoticeTime int64 `orm:"column(last_notice_time)" json:"last_notice_time"` // 上一次通知的时间
 	LastNoticeType string `orm:"column(last_notice_type)" json:"last_notice_type"` // 上一次通知的类型(up/down)
 	NoticeLimitMin int64 `orm:"column(notice_limit_min)" json:"notice_limit_min"` // 通知频率限制(分钟)
+	NoticePrice string `orm:"column(notice_price)" json:"notice_price"` // 价格通知触发价
+	HasNotice int64 `orm:"column(has_notice)" json:"has_notice"` // 1:已通知 0:未通知
+	AutoOrder int64 `orm:"column(auto_order)" json:"auto_order"` // 1:自动下单 0:手动下单
+	ProfitPrice string `orm:"column(profit_price)" json:"profit_price"` // 止盈价格
+	LossPrice string `orm:"column(loss_price)" json:"loss_price"` // 止损价格
+	Leverage int64 `orm:"column(leverage)" json:"leverage"` // 合约倍数
+	MarginType string `orm:"column(marginType)" json:"marginType"` // 杠杆类型 ISOLATED(逐仓), CROSSED(全仓)
+	TickSize string `orm:"column(tickSize)" json:"tickSize"` // 交易金额精度
+	StepSize string `orm:"column(stepSize)" json:"stepSize"` // 交易数量精度
+	Usdt string `orm:"column(usdt)" json:"usdt"` // 交易金额
+	Side string `orm:"column(side)" json:"side"` // 买卖方向 buy/sell
+	Quantity string `orm:"column(quantity)" json:"quantity"` // 下单数量
 	Technology string `orm:"column(technology);type(text)" json:"technology"` // 技术指标配置 json
 	Strategy string `orm:"column(strategy);type(text)" json:"strategy"` // 策略 json
 	CreateTime int64 `orm:"column(createTime)" json:"createTime"`

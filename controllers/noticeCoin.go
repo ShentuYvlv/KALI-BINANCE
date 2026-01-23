@@ -20,8 +20,8 @@ func (ctrl *NoticeCoinController) Get() {
 	paramsType := ctrl.GetString("type", "")
 	
 	o := orm.NewOrm()
-	var symbols []models.NoticeSymbols
-	query := o.QueryTable("notice_symbols")
+	var symbols []models.ListenSymbols
+	query := o.QueryTable("listen_symbols").Filter("listen_type", "price_notice")
 	if paramsType != "" {
 		query = query.Filter("Type", paramsType)
 	}
@@ -39,10 +39,11 @@ func (ctrl *NoticeCoinController) Get() {
 	
 func (ctrl *NoticeCoinController) Edit() {
 	id := ctrl.Ctx.Input.Param(":id")
-	symbols := new(models.NoticeSymbols)
+	symbols := new(models.ListenSymbols)
 	ctrl.BindJSON(&symbols)
 	intId, _ := strconv.ParseInt(id, 10, 64)
 	symbols.ID = intId
+	symbols.ListenType = "price_notice"
 	
 	// tickSize, stepSize := spot.GetCoinOrderSize(symbols.Symbol)
 	// symbols.TickSize = tickSize
@@ -64,7 +65,7 @@ func (ctrl *NoticeCoinController) Edit() {
 
 func (ctrl *NoticeCoinController) Delete() {
 	id := ctrl.Ctx.Input.Param(":id")
-	symbols := new(models.NoticeSymbols)
+	symbols := new(models.ListenSymbols)
 	intId, _ := strconv.ParseInt(id, 10, 64)
 	symbols.ID = intId
 	o := orm.NewOrm()
@@ -82,7 +83,7 @@ func (ctrl *NoticeCoinController) Delete() {
 }
 
 func (ctrl *NoticeCoinController) Post() {
-	symbols := new(models.NoticeSymbols)
+	symbols := new(models.ListenSymbols)
 	ctrl.BindJSON(&symbols)
 	
 	symbols.Enable = 0 // 默认不开启
@@ -90,6 +91,10 @@ func (ctrl *NoticeCoinController) Post() {
 	symbols.AutoOrder = 1 // 默认自动下单
 	symbols.ProfitPrice = "0" // 默认止盈价格(0表示不止盈)
 	symbols.LossPrice = "0" // 默认止损价格(0表示不止损)
+	symbols.ListenType = "price_notice"
+	if symbols.NoticeLimitMin == 0 {
+		symbols.NoticeLimitMin = 5
+	}
 	
 	symbols.Leverage = 3
 	symbols.MarginType = "ISOLATED"
@@ -132,7 +137,7 @@ func (ctrl *NoticeCoinController) UpdateEnable() {
 	flag := ctrl.Ctx.Input.Param(":flag")
 	
 	o := orm.NewOrm()
-	_, err := o.Raw("UPDATE notice_symbols SET enable = ?", flag).Exec()
+	_, err := o.Raw("UPDATE listen_symbols SET enable = ? WHERE listen_type = 'price_notice'", flag).Exec()
 	if err != nil {
 		// 处理错误
 		ctrl.Ctx.Resp(utils.ResJson(400, nil, "更新错误"))
