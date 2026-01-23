@@ -55,7 +55,7 @@
     </div>
     <div style="display: flex;justify-content: space-between;align-items: center; margin-bottom: 10px;">
       <div style="display: flex;flex-flow: row wrap;gap: 10px;">
-        <el-input
+        <symbol-suggest-input
           v-model="search.symbol"
           :placeholder="$t('trade.coin')"
           style="width: 150px;"
@@ -613,7 +613,7 @@
         style="width: 400px; margin-left:50px;"
       >
         <el-form-item :label="$t('trade.coin')" prop="symbol">
-          <el-input v-model="info.symbol" />
+          <symbol-suggest-input v-model="info.symbol" />
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -1313,6 +1313,7 @@
 import { getSpots, editSpot, addSpot, delSpot, enableSpot, batchEdit, testStrategyRule } from '@/api/spot'
 import { getList } from '@/api/strategy_template'
 import Pagination from '@/components/Pagination'
+import SymbolSuggestInput from '@/components/SymbolSuggestInput'
 import { round } from 'mathjs'
 
 import CodeMirror from 'codemirror'
@@ -1371,6 +1372,7 @@ export default {
   components: {
     codemirror,
     Pagination,
+    SymbolSuggestInput,
   },
   data() {
     return {

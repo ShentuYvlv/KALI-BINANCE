@@ -2,7 +2,7 @@
   <div class="app-container">
     <div style="margin-bottom: 10px; display: flex;justify-content: space-between;align-items: center;">
       <div style="display: flex;flex-flow: row wrap;gap: 10px; width:75%">
-        <el-input
+        <symbol-suggest-input
           v-model="search.symbol"
           :placeholder="$t('trade.coin') "
           style="width: 150px;"
@@ -156,10 +156,14 @@
 
 <script>
 import { getFundingRates, getFundingRateHistory, editFundingRates } from '@/api/listenCoin'
+import SymbolSuggestInput from '@/components/SymbolSuggestInput'
 import { parseTime } from '@/utils'
 import { round } from 'mathjs'
 
 export default {
+  components: {
+    SymbolSuggestInput,
+  },
   data() {
     return {
       list: [],

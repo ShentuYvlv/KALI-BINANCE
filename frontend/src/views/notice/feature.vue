@@ -188,7 +188,7 @@
         style="width: 400px; margin-left:50px;"
       >
         <el-form-item :label="$t('trade.coin')" prop="symbol">
-          <el-input v-model="info.symbol" />
+          <symbol-suggest-input v-model="info.symbol" />
         </el-form-item>
         <el-form-item :label="$t('trade.noticePrice')" prop="symbol">
           <el-input v-model="info.notice_price" />
@@ -204,8 +204,12 @@
 
 <script>
 import { getNoticeCoins, setNoticeCoin, addNoticeCoin, delNoticeCoin } from '@/api/noticeCoin'
+import SymbolSuggestInput from '@/components/SymbolSuggestInput'
 
 export default {
+  components: {
+    SymbolSuggestInput,
+  },
   data() {
     return {
       list: [],

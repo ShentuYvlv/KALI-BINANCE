@@ -1,13 +1,12 @@
 <template>
   <div class="app-container">
     <div style="margin-bottom: 10px">
-      <el-input
+      <symbol-suggest-input
         v-model="listQuery.symbol"
         size="mini"
         :placeholder="$t('trade.coin')"
         style="width: 150px;"
         class="filter-item"
-        @keyup.enter.native="handleFilter"
       />
       <el-select v-model="listQuery.type" clearable size="mini" class="filter-item" style="width: 75px;" placeholder="status">
         <el-option :label="$t('table.all')" value="all" />
@@ -251,6 +250,7 @@
 <script>
 import { getResult, getResults, delAllResults, delResults } from '@/api/testStrategyResult'
 import Pagination from '@/components/Pagination'
+import SymbolSuggestInput from '@/components/SymbolSuggestInput'
 import { parseTime } from '@/utils/index'
 import { round } from 'mathjs'
 
@@ -276,7 +276,7 @@ import 'codemirror/addon/edit/matchbrackets'
 import 'codemirror/addon/edit/closebrackets'
 
 export default {
-  components: { Pagination, codemirror },
+  components: { Pagination, codemirror, SymbolSuggestInput },
   data() {
     return {
       cmOptions: {

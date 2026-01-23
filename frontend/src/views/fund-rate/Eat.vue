@@ -160,13 +160,13 @@
         style="width: 400px; margin-left:50px;"
       >
         <el-form-item :label="$t('trade.coin')" prop="symbol">
-          <el-input v-model="info.symbol" />
+          <symbol-suggest-input v-model="info.symbol" />
         </el-form-item>
         <el-form-item :label="$t('trade.spot') + $t('trade.coin')" prop="spot_symbol">
-          <el-input v-model="info.spot_symbol" />
+          <symbol-suggest-input v-model="info.spot_symbol" />
         </el-form-item>
         <el-form-item :label="$t('trade.futures') + $t('trade.coin')" prop="futures_symbol">
-          <el-input v-model="info.futures_symbol" />
+          <symbol-suggest-input v-model="info.futures_symbol" />
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -194,10 +194,14 @@
 
 <script>
 import { getList, editData, addData, delData, start, end } from '@/api/fund_rate_eat'
+import SymbolSuggestInput from '@/components/SymbolSuggestInput'
 import { parseTime } from '@/utils/index'
 import { round } from 'mathjs'
 
 export default {
+  components: {
+    SymbolSuggestInput,
+  },
   data() {
     return {
       list: [],

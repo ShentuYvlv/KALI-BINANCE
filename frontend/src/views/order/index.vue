@@ -1,13 +1,12 @@
 <template>
   <div class="app-container">
     <div style="margin-bottom: 10px">
-      <el-input
+      <symbol-suggest-input
         v-model="listQuery.symbol"
         size="mini"
         :placeholder="$t('trade.coin')"
         style="width: 120px; margin-right: 10px"
         class="filter-item"
-        @keyup.enter.native="handleFilter"
       />
       <el-select v-model="listQuery.type" clearable size="mini" class="filter-item" style="width: 100px;" placeholder="status">
         <el-option :label="$t('table.all')" value="all" />
@@ -207,11 +206,12 @@
 <script>
 import { getOrders, delAllTrade, delTrade } from '@/api/order'
 import Pagination from '@/components/Pagination'
+import SymbolSuggestInput from '@/components/SymbolSuggestInput'
 import { round } from 'mathjs'
 import { parseTime } from '@/utils/index'
 
 export default {
-  components: { Pagination },
+  components: { Pagination, SymbolSuggestInput },
   data() {
     return {
       pickerOptions: {

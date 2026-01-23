@@ -137,7 +137,7 @@
         style="width: 400px; margin-left:50px;"
       >
         <el-form-item :label="$t('trade.coin')" prop="symbol">
-          <el-input v-model="info.symbol" />
+          <symbol-suggest-input v-model="info.symbol" />
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -150,9 +150,13 @@
 
 <script>
 import { getListenCoins, setListenCoin, addListenCoin, delListenCoin } from '@/api/listenCoin'
+import SymbolSuggestInput from '@/components/SymbolSuggestInput'
 import { parseTime } from '@/utils'
 
 export default {
+  components: {
+    SymbolSuggestInput,
+  },
   data() {
     return {
       list: [],

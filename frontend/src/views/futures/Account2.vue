@@ -80,7 +80,7 @@
       <el-tab-pane :label="$t('trade.position')" name="position">
         <div style="display: flex;justify-content: space-between;align-items: center; margin-bottom: 10px;">
           <div style="display: flex;flex-flow: row wrap;gap: 10px;justify-content: center;align-items: center;">
-            <el-input
+            <symbol-suggest-input
               v-model="search.symbol"
               :placeholder="$t('trade.coin')"
               style="width: 150px;"
@@ -312,10 +312,14 @@
 
 <script>
 import { getFuturesAccount, getLocalFuturesPositions, getLocalFuturesOpenOrders, updateLocalFuturesPositions, delLocalFuturesPositions } from '@/api/trade'
+import SymbolSuggestInput from '@/components/SymbolSuggestInput'
 import { parseTime } from '@/utils'
 import { round } from 'mathjs'
 
 export default {
+  components: {
+    SymbolSuggestInput,
+  },
   data() {
     return {
       tabName: 'position', // account, position, openOrder

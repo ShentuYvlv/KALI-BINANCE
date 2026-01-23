@@ -203,7 +203,7 @@
         style="width: 400px; margin-left:50px;"
       >
         <el-form-item :label="$t('trade.coin')" prop="symbol">
-          <el-input v-model="info.symbol" />
+          <symbol-suggest-input v-model="info.symbol" />
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -862,6 +862,7 @@
 import { getListenCoins, setListenCoin, addListenCoin, delListenCoin, getKcLineChart, testStrategyRule } from '@/api/listenCoin'
 import { round } from 'mathjs'
 import VueApexCharts from 'vue-apexcharts'
+import SymbolSuggestInput from '@/components/SymbolSuggestInput'
 import { parseTime } from '@/utils'
 
 import CodeMirror from 'codemirror'
@@ -920,6 +921,7 @@ export default {
   components: {
     apexchart: VueApexCharts,
     codemirror,
+    SymbolSuggestInput,
   },
   data() {
     return {
