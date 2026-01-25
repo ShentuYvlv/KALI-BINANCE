@@ -18,7 +18,7 @@ import (
 
 var flagFuturesNotice = 0
 func NoticeAndAutoOrder(systemConfig models.Config) {
-	if (systemConfig.NoticeCoinEnable == 1) {
+	if (systemConfig.ListenCoinEnable == 1) {
 		if (flagFuturesNotice == 0) {
 			logs.Info("futures notice bot start")
 			flagFuturesNotice = 1

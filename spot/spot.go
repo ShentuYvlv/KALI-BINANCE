@@ -107,7 +107,7 @@ func TryRush(systemConfig models.Config) {
 
 var flagSpotNotice = 0
 func NoticeAndAutoOrder(systemConfig models.Config) {
-	if (systemConfig.NoticeCoinEnable == 1) {
+	if (systemConfig.ListenCoinEnable == 1) {
 		if (flagSpotNotice == 0) {
 			logs.Info("spot notice bot start")
 			flagSpotNotice = 1
@@ -121,8 +121,8 @@ func NoticeAndAutoOrder(systemConfig models.Config) {
 	}
 	
 	o := orm.NewOrm()
-	var coins []models.NoticeSymbols
-	o.QueryTable("notice_symbols").OrderBy("ID").Filter("enable", 1).Filter("type", 1).Filter("has_notice", 0).All(&coins) // 通知币列表
+	var coins []models.ListenSymbols
+	o.QueryTable("listen_symbols").OrderBy("ID").Filter("enable", 1).Filter("type", 1).Filter("listen_type", "price_notice").Filter("has_notice", 0).All(&coins) // 通知币列表
 	
 	for _, coin := range coins {
 		logs.Info("notice_futures: ", coin.Symbol)

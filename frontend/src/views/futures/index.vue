@@ -108,53 +108,6 @@
             </template>
           </el-table-column>
           <el-table-column
-            :label="$t('trade.strategyType')"
-            align="center"
-            width="115"
-          >
-            <template slot-scope="scope">
-              <el-select v-model="scope.row.strategy_type" size="mini" @change="edit(scope.row)">
-                <el-option :label="$t('strategyType.global')" value="global" />
-                <el-option :label="$t('strategyType.custom')" value="custom" />
-                <el-option :label="$t('strategyType.line1')" value="line1" />
-                <el-option :label="$t('strategyType.line2')" value="line2" />
-                <el-option :label="$t('strategyType.line3')" value="line3" />
-                <el-option :label="$t('strategyType.line4')" value="line4" />
-                <el-option :label="$t('strategyType.line5')" value="line5" />
-                <el-option :label="$t('strategyType.line6')" value="line6" />
-                <el-option :label="$t('strategyType.line7')" value="line7" />
-              </el-select>
-            </template>
-          </el-table-column>
-          <el-table-column
-            :label="$t('trade.technology')"
-            align="center"
-            width="115"
-          >
-            <template slot-scope="scope">
-              <el-button
-                type="success"
-                size="mini"
-                @click="openTechnologyDialog(scope.row)"
-              > {{ $t('trade.technology') }}
-              </el-button>
-            </template>
-          </el-table-column>
-          <el-table-column
-            :label="$t('trade.strategy')"
-            align="center"
-            width="100"
-          >
-            <template slot-scope="scope">
-              <el-button
-                type="success"
-                size="mini"
-                @click="openStrategyDialog(scope.row)"
-              > {{ $t('trade.strategy') }}
-              </el-button>
-            </template>
-          </el-table-column>
-          <el-table-column
             :label="$t('trade.nowPrice')"
             align="center"
             show-overflow-tooltip
@@ -202,74 +155,6 @@
           </el-select>
         </template>
       </el-table-column> -->
-          <el-table-column
-            :label="$t('trade.marginType')"
-            align="center"
-            width="125"
-          >
-            <template slot-scope="scope">
-              <el-select v-model="scope.row.marginType" size="mini" @change="edit(scope.row)">
-                <el-option :label="$t('trade.ISOLATED')" value="ISOLATED" />
-                <el-option :label="$t('trade.CROSSED')" value="CROSSED" />
-              </el-select>
-            </template>
-          </el-table-column>
-          <el-table-column
-            :label="$t('trade.usdt')"
-            align="center"
-            width="75"
-          >
-            <template slot-scope="scope">
-              <el-input
-                v-model="scope.row.usdt"
-                class="edit-input"
-                size="mini"
-                @blur="edit(scope.row)"
-              />
-            </template>
-          </el-table-column>
-          <el-table-column
-            :label="$t('trade.leverage')"
-            align="center"
-            width="75"
-          >
-            <template slot-scope="scope">
-              <el-input
-                v-model="scope.row.leverage"
-                class="edit-input"
-                size="mini"
-                @blur="edit(scope.row)"
-              />
-            </template>
-          </el-table-column>
-          <el-table-column
-            :label="$t('trade.profitRate')"
-            align="center"
-            width="75"
-          >
-            <template slot-scope="scope">
-              <el-input
-                v-model="scope.row.profit"
-                class="edit-input"
-                size="mini"
-                @blur="edit(scope.row)"
-              />
-            </template>
-          </el-table-column>
-          <el-table-column
-            :label="$t('trade.lossRate')"
-            align="center"
-            width="75"
-          >
-            <template slot-scope="scope">
-              <el-input
-                v-model="scope.row.loss"
-                class="edit-input"
-                size="mini"
-                @blur="edit(scope.row)"
-              />
-            </template>
-          </el-table-column>
           <el-table-column :label="$t('trade.enable')" align="center" width="75">
             <template slot-scope="{ row }">
               <el-switch
@@ -283,10 +168,16 @@
           <el-table-column
             :label="$t('table.actions')"
             align="center"
-            width="75"
+            width="140"
             class-name="small-padding fixed-width"
           >
             <template slot-scope="{row}">
+              <el-button
+                type="primary"
+                size="mini"
+                @click="openConfigDrawer(row)"
+              >{{ $t('table.edit') }}
+              </el-button>
               <el-button
                 type="danger"
                 size="mini"
@@ -327,53 +218,6 @@
           >
             <template slot-scope="scope">
               {{ scope.row.symbol }}
-            </template>
-          </el-table-column>
-          <el-table-column
-            :label="$t('trade.strategyType')"
-            align="center"
-            width="115"
-          >
-            <template slot-scope="scope">
-              <el-select v-model="scope.row.strategy_type" size="mini" @change="edit(scope.row)">
-                <el-option :label="$t('strategyType.global')" value="global" />
-                <el-option :label="$t('strategyType.custom')" value="custom" />
-                <el-option :label="$t('strategyType.line1')" value="line1" />
-                <el-option :label="$t('strategyType.line2')" value="line2" />
-                <el-option :label="$t('strategyType.line3')" value="line3" />
-                <el-option :label="$t('strategyType.line4')" value="line4" />
-                <el-option :label="$t('strategyType.line5')" value="line5" />
-                <el-option :label="$t('strategyType.line6')" value="line6" />
-                <el-option :label="$t('strategyType.line7')" value="line7" />
-              </el-select>
-            </template>
-          </el-table-column>
-          <el-table-column
-            :label="$t('trade.technology')"
-            align="center"
-            width="115"
-          >
-            <template slot-scope="scope">
-              <el-button
-                type="success"
-                size="mini"
-                @click="openTechnologyDialog(scope.row)"
-              > {{ $t('trade.technology') }}
-              </el-button>
-            </template>
-          </el-table-column>
-          <el-table-column
-            :label="$t('trade.strategy')"
-            align="center"
-            width="100"
-          >
-            <template slot-scope="scope">
-              <el-button
-                type="success"
-                size="mini"
-                @click="openStrategyDialog(scope.row)"
-              > {{ $t('trade.strategy') }}
-              </el-button>
             </template>
           </el-table-column>
           <el-table-column
@@ -424,74 +268,6 @@
           </el-select>
         </template>
       </el-table-column> -->
-          <el-table-column
-            :label="$t('trade.marginType')"
-            align="center"
-            width="125"
-          >
-            <template slot-scope="scope">
-              <el-select v-model="scope.row.marginType" size="mini" @change="edit(scope.row)">
-                <el-option :label="$t('trade.ISOLATED')" value="ISOLATED" />
-                <el-option :label="$t('trade.CROSSED')" value="CROSSED" />
-              </el-select>
-            </template>
-          </el-table-column>
-          <el-table-column
-            :label="$t('trade.usdt')"
-            align="center"
-            width="75"
-          >
-            <template slot-scope="scope">
-              <el-input
-                v-model="scope.row.usdt"
-                class="edit-input"
-                size="mini"
-                @blur="edit(scope.row)"
-              />
-            </template>
-          </el-table-column>
-          <el-table-column
-            :label="$t('trade.leverage')"
-            align="center"
-            width="75"
-          >
-            <template slot-scope="scope">
-              <el-input
-                v-model="scope.row.leverage"
-                class="edit-input"
-                size="mini"
-                @blur="edit(scope.row)"
-              />
-            </template>
-          </el-table-column>
-          <el-table-column
-            :label="$t('trade.profitRate')"
-            align="center"
-            width="75"
-          >
-            <template slot-scope="scope">
-              <el-input
-                v-model="scope.row.profit"
-                class="edit-input"
-                size="mini"
-                @blur="edit(scope.row)"
-              />
-            </template>
-          </el-table-column>
-          <el-table-column
-            :label="$t('trade.lossRate')"
-            align="center"
-            width="75"
-          >
-            <template slot-scope="scope">
-              <el-input
-                v-model="scope.row.loss"
-                class="edit-input"
-                size="mini"
-                @blur="edit(scope.row)"
-              />
-            </template>
-          </el-table-column>
           <el-table-column :label="$t('trade.enable')" align="center" width="75">
             <template slot-scope="{ row }">
               <el-switch
@@ -505,10 +281,16 @@
           <el-table-column
             :label="$t('table.actions')"
             align="center"
-            width="75"
+            width="140"
             class-name="small-padding fixed-width"
           >
             <template slot-scope="{row}">
+              <el-button
+                type="primary"
+                size="mini"
+                @click="openConfigDrawer(row)"
+              >{{ $t('table.edit') }}
+              </el-button>
               <el-button
                 type="danger"
                 size="mini"
@@ -527,6 +309,73 @@
       :limit.sync="search.limit"
       @pagination="getFutures"
     />
+    <el-drawer
+      :visible.sync="drawerVisible"
+      :title="drawerTitle"
+      size="420px"
+      direction="rtl"
+    >
+      <el-form
+        :model="drawerForm"
+        label-position="left"
+        label-width="110px"
+        size="mini"
+      >
+        <el-form-item :label="$t('trade.strategyType')">
+          <el-select v-model="drawerForm.strategy_type" size="mini">
+            <el-option :label="$t('strategyType.global')" value="global" />
+            <el-option :label="$t('strategyType.custom')" value="custom" />
+            <el-option :label="$t('strategyType.line1')" value="line1" />
+            <el-option :label="$t('strategyType.line2')" value="line2" />
+            <el-option :label="$t('strategyType.line3')" value="line3" />
+            <el-option :label="$t('strategyType.line4')" value="line4" />
+            <el-option :label="$t('strategyType.line5')" value="line5" />
+            <el-option :label="$t('strategyType.line6')" value="line6" />
+            <el-option :label="$t('strategyType.line7')" value="line7" />
+          </el-select>
+        </el-form-item>
+        <el-form-item :label="$t('trade.technology')">
+          <el-button
+            type="success"
+            size="mini"
+            :disabled="!drawerTarget"
+            @click="openTechnologyDialog(drawerTarget)"
+          >{{ $t('trade.technology') }}
+          </el-button>
+        </el-form-item>
+        <el-form-item :label="$t('trade.strategy')">
+          <el-button
+            type="success"
+            size="mini"
+            :disabled="!drawerTarget"
+            @click="openStrategyDialog(drawerTarget)"
+          >{{ $t('trade.strategy') }}
+          </el-button>
+        </el-form-item>
+        <el-form-item :label="$t('trade.marginType')">
+          <el-select v-model="drawerForm.marginType" size="mini">
+            <el-option :label="$t('trade.ISOLATED')" value="ISOLATED" />
+            <el-option :label="$t('trade.CROSSED')" value="CROSSED" />
+          </el-select>
+        </el-form-item>
+        <el-form-item :label="$t('trade.usdt')">
+          <el-input v-model="drawerForm.usdt" />
+        </el-form-item>
+        <el-form-item :label="$t('trade.leverage')">
+          <el-input v-model="drawerForm.leverage" />
+        </el-form-item>
+        <el-form-item :label="$t('trade.profitRate')">
+          <el-input v-model="drawerForm.profit" />
+        </el-form-item>
+        <el-form-item :label="$t('trade.lossRate')">
+          <el-input v-model="drawerForm.loss" />
+        </el-form-item>
+      </el-form>
+      <div style="display: flex; justify-content: flex-end; gap: 8px; padding-top: 16px;">
+        <el-button size="mini" @click="drawerVisible = false">{{ $t('table.cancel') }}</el-button>
+        <el-button type="primary" size="mini" @click="applyDrawerConfig">{{ $t('table.confirm') }}</el-button>
+      </div>
+    </el-drawer>
     <!-- add data -->
     <el-dialog :title="dialogTitle" :visible.sync="dialogFormVisible">
       <el-form
@@ -1360,6 +1209,18 @@ export default {
       technologySymbolId: 0, // 当前编辑的技术指标对应symbol行的 ID
       technology: JSON.parse(JSON.stringify(initTechnology)),
 
+      drawerVisible: false,
+      drawerTitle: '',
+      drawerForm: {
+        strategy_type: undefined,
+        marginType: undefined,
+        usdt: undefined,
+        leverage: undefined,
+        profit: undefined,
+        loss: undefined,
+      },
+      drawerTarget: null,
+
       dialogStrategyTitle: '',
       dialogStrategyVisible: false,
       strategySymbolId: 0, // 当前编辑的策略对应symbol行的 ID
@@ -1708,6 +1569,34 @@ export default {
     },
     async isChangeBuy(event, row) {
       await this.edit(row)
+    },
+    openConfigDrawer(row) {
+      this.drawerTarget = row
+      this.drawerTitle = `${row.symbol} ${this.$t('table.edit')}`
+      this.drawerForm = {
+        strategy_type: row.strategy_type,
+        marginType: row.marginType,
+        usdt: row.usdt,
+        leverage: row.leverage,
+        profit: row.profit,
+        loss: row.loss,
+      }
+      this.drawerVisible = true
+    },
+    async applyDrawerConfig() {
+      if (!this.drawerTarget) {
+        return
+      }
+      Object.assign(this.drawerTarget, {
+        strategy_type: this.drawerForm.strategy_type,
+        marginType: this.drawerForm.marginType,
+        usdt: this.drawerForm.usdt,
+        leverage: this.drawerForm.leverage,
+        profit: this.drawerForm.profit,
+        loss: this.drawerForm.loss,
+      })
+      await this.edit(this.drawerTarget)
+      this.drawerVisible = false
     },
     openDialog() {
       this.dialogTitle = this.$t('table.add')

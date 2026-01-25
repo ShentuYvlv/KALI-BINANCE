@@ -84,27 +84,6 @@ const tradeRouter = [
   // },
 
   {
-    path: '/notice',
-    component: Layout,
-    redirect: '/listen/spot',
-    hidden: true,
-    meta: { title: 'coinNotice', icon: 'table' },
-    children: [
-      {
-        path: 'spot',
-        name: 'noticeSpot',
-        component: () => import('@/views/notice/spot'),
-        meta: { title: 'spotNotice', affix: false, noCache: true },
-      },
-      {
-        path: 'feature',
-        name: 'noticeFeature',
-        component: () => import('@/views/notice/feature'),
-        meta: { title: 'futuresNotice', affix: false, noCache: true },
-      },
-    ],
-  },
-  {
     path: '/listen',
     component: Layout,
     redirect: '/listen/coin',

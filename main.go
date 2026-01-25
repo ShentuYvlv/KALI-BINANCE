@@ -112,6 +112,10 @@ func syncDb() {
 		config.Version = dbVersion
 		orm.NewOrm().Update(&config)
 	}
+	if config.ListenCoinEnable == 0 && config.NoticeCoinEnable == 1 {
+		config.ListenCoinEnable = 1
+		_, _ = orm.NewOrm().Update(&config, "listen_coin_enable")
+	}
 	SystemConfig = config
 
 	// merge notice into listen schema/data
@@ -316,4 +320,3 @@ func main() {
 	// web
 	web.Run(":" + webPort)
 }
-

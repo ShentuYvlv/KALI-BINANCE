@@ -271,21 +271,6 @@
           </div>
         </div>
       </el-collapse-item>
-      <el-collapse-item name="coin_notice">
-        <template slot="title">
-          <div class="dashboard-text">
-            <span>{{ $t('route.coinNotice') }}: </span>
-            <el-switch
-              v-model="config.noticeCoinEnable"
-              active-color="#13ce66"
-              inactive-color="#dcdfe6"
-              :active-value="1"
-              :inactive-value="0"
-              @change="editConfig($event, 'notice_coin_enable')"
-            />
-          </div>
-        </template>
-      </el-collapse-item>
       <el-collapse-item name="market_listen">
         <template slot="title">
           <div class="dashboard-text">
@@ -386,7 +371,6 @@ export default {
         'externalLinks': [],
         'listenCoinEnable': 0,
         'listenFundingRate': 0,
-        'noticeCoinEnable': 0,
         'spotNewEnable': 0,
         'tradeFutureTest': 0,
         'tradeFutureTestNoticeLimitMin': 0,

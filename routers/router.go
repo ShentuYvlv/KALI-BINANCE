@@ -36,10 +36,6 @@ func init() {
 	web.Router("/rush/:id", &controllers.RushController{}, "delete:Delete;put:Edit") // 更新和删除
 	web.Router("/rush/enable/:flag", &controllers.RushController{}, "put:UpdateEnable") // 修改所有的交易对开启关闭
 	
-	web.Router("/notice/coin", &controllers.NoticeCoinController{}, "get:Get;post:Post") // 列表查询和新增
-	web.Router("/notice/coin/:id", &controllers.NoticeCoinController{}, "delete:Delete;put:Edit") // 更新和删除
-	web.Router("/notice/coin/enable/:flag", &controllers.NoticeCoinController{}, "put:UpdateEnable") // 修改所有的交易对开启关闭
-	
 	web.Router("/listen/coin", &controllers.ListenCoinController{}, "get:Get;post:Post") // 列表查询和新增
 	web.Router("/listen/coin/:id", &controllers.ListenCoinController{}, "delete:Delete;put:Edit") // 更新和删除
 	web.Router("/listen/coin/kc-chart/:id", &controllers.ListenCoinController{}, "get:GetKcLineChart") // kcChart
@@ -74,4 +70,3 @@ func init() {
 	web.Router("/pull", &controllers.CommandController{}, "post:GitPull") // git pull
 	web.Router("/pm2-log", &controllers.CommandController{}, "get:Pm2Log") // pm2-log
 }
-

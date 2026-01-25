@@ -40,8 +40,6 @@ func (ctrl *IndexController) GetServiceConfig() {
 	
 	var spotNewEnable = systemConfig.SpotNewEnable
 	
-	var noticeCoinEnable = systemConfig.NoticeCoinEnable
-	
 	var listenCoinEnable = systemConfig.ListenCoinEnable
 	var listenFundingRate = systemConfig.ListenFundingRateEnable
 	var lossMaxCount = systemConfig.LossMaxCount
@@ -74,8 +72,6 @@ func (ctrl *IndexController) GetServiceConfig() {
 			"tradeNewEnable": tradeNewEnable,
 			
 			"spotNewEnable": spotNewEnable,
-			
-			"noticeCoinEnable": noticeCoinEnable,
 			
 			"listenCoinEnable": listenCoinEnable,
 			"listenFundingRate": listenFundingRate,
