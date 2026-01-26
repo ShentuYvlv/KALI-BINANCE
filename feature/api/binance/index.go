@@ -152,6 +152,17 @@ func GetTickerPrice(symbol string) (res []*futures.SymbolPrice, err error) {
 	return res, err
 }
 
+// 获取合约开仓量
+// @see https://developers.binance.com/docs/zh-CN/derivatives/usds-margined-futures/market-data/Open-Interest
+func GetOpenInterest(symbol string) (res *futures.OpenInterest, err error) {
+	res, err = futuresClient.NewGetOpenInterestService().Symbol(symbol).Do(context.Background())
+	if err != nil {
+		logs.Error(err)
+		return nil, err
+	}
+	return res, err
+}
+
 // limit 5, 10, 20, 50, 100, 500, 1000
 // @see https://binance-docs.github.io/apidocs/futures/cn/#38a975b802
 func GetDepthAvgPrice(symbol string, limits ...int) (buyPrice float64, sellPrice float64, err error) {
@@ -404,7 +415,7 @@ func OrderTakeProfit(symbol string, stopPrice float64, side futures.SideType, po
 		Symbol(symbol).
 		Side(side).
 		PositionSide(positionSide).
-		Type(futures.OrderTypeTakeProfitMarket). // 止盈市价单
+		Type(futures.OrderType(futures.AlgoOrderTypeTakeProfitMarket)). // 止盈市价单
 		StopPrice(strconv.FormatFloat(stopPrice, 'f', -1, 64)). // 触发价格
 		ClosePosition(true). // 是否市价全平(和quantity参数互斥)
 		// Quantity(strconv.FormatFloat(quantity, 'f', -1, 64)).
@@ -425,7 +436,7 @@ func OrderStopLoss(symbol string, stopPrice float64, side futures.SideType, posi
 		Symbol(symbol).
 		Side(side).
 		PositionSide(positionSide).
-		Type(futures.OrderTypeStopMarket). // 止损限价单
+		Type(futures.OrderType(futures.AlgoOrderTypeStopMarket)). // 止损限价单
 		StopPrice(strconv.FormatFloat(stopPrice, 'f', -1, 64)). // 触发价格
 		ClosePosition(true). // 是否市价全平(和quantity参数互斥)
 		// Quantity(strconv.FormatFloat(quantity, 'f', -1, 64)).
@@ -655,4 +666,3 @@ func WsKlineData(symbol string, interval string, callback func(kline futures.WsK
 		return
 	}
 }
-

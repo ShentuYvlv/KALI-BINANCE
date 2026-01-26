@@ -5,8 +5,10 @@ import (
 	"math"
 	"strconv"
 	"strings"
+	"sync"
 
 	"go_binance_futures/feature"
+	"go_binance_futures/feature/api/binance"
 	"go_binance_futures/feature/strategy/line"
 	"go_binance_futures/models"
 	"go_binance_futures/technology"
@@ -79,7 +81,7 @@ func (ctrl *FeatureController) Get() {
 		}
 	}
 	_, err := query.OrderBy(orderFields...).Limit(limit, offset).All(&symbols,
-		"ID", "Symbol", "PercentChange", "Close", "Open", "Low", "High", "Enable", "UpdateTime", "QuoteVolume", "TradeCount", "Leverage", "MarginType",
+		"ID", "Symbol", "PercentChange", "Close", "Open", "Low", "High", "Enable", "UpdateTime", "BaseVolume", "QuoteVolume", "TradeCount", "Leverage", "MarginType",
 		"StepSize", "TickSize", "Usdt", "Profit", "Loss", "StrategyType", "Pin", "Sort", "Type",
 	)
 	if err != nil {
@@ -88,6 +90,24 @@ func (ctrl *FeatureController) Get() {
 	total, err := countQuery.Count()
 	if err != nil {
 		ctrl.Ctx.Resp(utils.ResJson(400, nil, err.Error()))
+	}
+
+	if len(symbols) > 0 {
+		var wg sync.WaitGroup
+		sem := make(chan struct{}, 8)
+		for i := range symbols {
+			wg.Add(1)
+			go func(idx int) {
+				defer wg.Done()
+				sem <- struct{}{}
+				res, err := binance.GetOpenInterest(symbols[idx].Symbol)
+				if err == nil && res != nil {
+					symbols[idx].OpenInterest = res.OpenInterest
+				}
+				<-sem
+			}(i)
+		}
+		wg.Wait()
 	}
 	
 	ctrl.Ctx.Resp(map[string]interface{} {

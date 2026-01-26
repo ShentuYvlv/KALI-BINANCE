@@ -130,6 +130,36 @@
               <span v-else style="color: green;">{{ scope.row.percentChange }}%↑ </span>
             </template>
           </el-table-column>
+          <el-table-column
+            label="交易量"
+            align="center"
+            width="110"
+            show-overflow-tooltip
+          >
+            <template slot-scope="scope">
+              {{ formatMetric(scope.row.baseVolume) }}
+            </template>
+          </el-table-column>
+          <el-table-column
+            label="市值"
+            align="center"
+            width="120"
+            show-overflow-tooltip
+          >
+            <template slot-scope="scope">
+              {{ formatMetric(scope.row.quoteVolume) }}
+            </template>
+          </el-table-column>
+          <el-table-column
+            label="开仓量"
+            align="center"
+            width="110"
+            show-overflow-tooltip
+          >
+            <template slot-scope="scope">
+              {{ formatMetric(scope.row.openInterest) }}
+            </template>
+          </el-table-column>
           <!-- <el-table-column
         :label="$t('trade.klineInterval')"
         align="center"
@@ -241,6 +271,36 @@
             <template slot-scope="scope">
               <span v-if="scope.row.percentChange < 0" style="color: red;">{{ scope.row.percentChange }}%↓ </span>
               <span v-else style="color: green;">{{ scope.row.percentChange }}%↑ </span>
+            </template>
+          </el-table-column>
+          <el-table-column
+            label="交易量"
+            align="center"
+            width="110"
+            show-overflow-tooltip
+          >
+            <template slot-scope="scope">
+              {{ formatMetric(scope.row.baseVolume) }}
+            </template>
+          </el-table-column>
+          <el-table-column
+            label="市值"
+            align="center"
+            width="120"
+            show-overflow-tooltip
+          >
+            <template slot-scope="scope">
+              {{ formatMetric(scope.row.quoteVolume) }}
+            </template>
+          </el-table-column>
+          <el-table-column
+            label="开仓量"
+            align="center"
+            width="110"
+            show-overflow-tooltip
+          >
+            <template slot-scope="scope">
+              {{ formatMetric(scope.row.openInterest) }}
             </template>
           </el-table-column>
           <!-- <el-table-column
@@ -1286,6 +1346,21 @@ export default {
     async getStrategyTemplates() {
       const { data } = await getList()
       this.strategyTemplates = data
+    },
+    formatMetric(value) {
+      if (value === undefined || value === null || value === '') {
+        return '-'
+      }
+      const num = Number(value)
+      if (Number.isNaN(num)) {
+        return value
+      }
+      const abs = Math.abs(num)
+      if (abs >= 1e12) return `${round(num / 1e12, 2)}T`
+      if (abs >= 1e9) return `${round(num / 1e9, 2)}B`
+      if (abs >= 1e6) return `${round(num / 1e6, 2)}M`
+      if (abs >= 1e3) return `${round(num / 1e3, 2)}K`
+      return round(num, 4)
     },
     customHint(cm) {
       const cur = cm.getCursor()

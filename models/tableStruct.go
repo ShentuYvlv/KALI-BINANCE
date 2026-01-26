@@ -69,6 +69,7 @@ type Symbols struct {
 	QuoteVolume float64 `orm:"column(quoteVolume)" json:"quoteVolume"` // 24小时成交额 USDT
 	CloseQty float64 `orm:"column(closeQty)" json:"closeQty"` // 最新成交价格上的成交量
 	TradeCount float64 `orm:"column(tradeCount)" json:"tradeCount"` // 24小时交易数
+	OpenInterest string `orm:"-" json:"openInterest"` // 开仓量(接口实时获取)
 	
 	Leverage int64 `orm:"column(leverage)" json:"leverage"` // 合约倍数
 	MarginType string `orm:"column(marginType)" json:"marginType"` // 杠杆类型 ISOLATED(逐仓), CROSSED(全仓)
