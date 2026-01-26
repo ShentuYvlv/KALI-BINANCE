@@ -102,6 +102,7 @@
             :label="$t('trade.coin')"
             align="center"
             show-overflow-tooltip
+            width="110"
           >
             <template slot-scope="scope">
               {{ scope.row.symbol }}
@@ -111,6 +112,7 @@
             :label="$t('trade.nowPrice')"
             align="center"
             show-overflow-tooltip
+            width="110"
           >
             <template slot-scope="scope">
               {{ round(scope.row.close, 10) }}
@@ -135,6 +137,9 @@
             align="center"
             width="110"
             show-overflow-tooltip
+            prop="quote_volume"
+            sortable="custom"
+            :sort-orders="['descending', 'ascending', null]"
           >
             <template slot-scope="scope">
               {{ formatMetric(scope.row.quoteVolume) }}
@@ -145,6 +150,9 @@
             align="center"
             width="110"
             show-overflow-tooltip
+            prop="open_interest"
+            sortable="custom"
+            :sort-orders="['descending', 'ascending', null]"
           >
             <template slot-scope="scope">
               {{ formatMetric(scope.row.openInterest) }}
@@ -188,22 +196,24 @@
           <el-table-column
             :label="$t('table.actions')"
             align="center"
-            width="140"
+            width="160"
             class-name="small-padding fixed-width"
           >
             <template slot-scope="{row}">
-              <el-button
-                type="primary"
-                size="mini"
-                @click="openConfigDrawer(row)"
-              >{{ $t('table.edit') }}
-              </el-button>
-              <el-button
-                type="danger"
-                size="mini"
-                @click="del(row)"
-              >{{ $t('table.delete') }}
-              </el-button>
+              <div class="row-actions">
+                <el-button
+                  type="primary"
+                  size="mini"
+                  @click="openConfigDrawer(row)"
+                >{{ $t('table.edit') }}
+                </el-button>
+                <el-button
+                  type="danger"
+                  size="mini"
+                  @click="del(row)"
+                >{{ $t('table.delete') }}
+                </el-button>
+              </div>
             </template>
           </el-table-column>
         </el-table>
@@ -235,6 +245,7 @@
             :label="$t('trade.coin')"
             align="center"
             show-overflow-tooltip
+            width="110"
           >
             <template slot-scope="scope">
               {{ scope.row.symbol }}
@@ -244,6 +255,7 @@
             :label="$t('trade.nowPrice')"
             align="center"
             show-overflow-tooltip
+            width="110"
           >
             <template slot-scope="scope">
               {{ round(scope.row.close, 10) }}
@@ -268,6 +280,9 @@
             align="center"
             width="110"
             show-overflow-tooltip
+            prop="quote_volume"
+            sortable="custom"
+            :sort-orders="['descending', 'ascending', null]"
           >
             <template slot-scope="scope">
               {{ formatMetric(scope.row.quoteVolume) }}
@@ -278,6 +293,9 @@
             align="center"
             width="110"
             show-overflow-tooltip
+            prop="open_interest"
+            sortable="custom"
+            :sort-orders="['descending', 'ascending', null]"
           >
             <template slot-scope="scope">
               {{ formatMetric(scope.row.openInterest) }}
@@ -321,22 +339,24 @@
           <el-table-column
             :label="$t('table.actions')"
             align="center"
-            width="140"
+            width="160"
             class-name="small-padding fixed-width"
           >
             <template slot-scope="{row}">
-              <el-button
-                type="primary"
-                size="mini"
-                @click="openConfigDrawer(row)"
-              >{{ $t('table.edit') }}
-              </el-button>
-              <el-button
-                type="danger"
-                size="mini"
-                @click="del(row)"
-              >{{ $t('table.delete') }}
-              </el-button>
+              <div class="row-actions">
+                <el-button
+                  type="primary"
+                  size="mini"
+                  @click="openConfigDrawer(row)"
+                >{{ $t('table.edit') }}
+                </el-button>
+                <el-button
+                  type="danger"
+                  size="mini"
+                  @click="del(row)"
+                >{{ $t('table.delete') }}
+                </el-button>
+              </div>
             </template>
           </el-table-column>
         </el-table>
@@ -1128,6 +1148,12 @@
 // 补全弹层
 .CodeMirror-hints {
   z-index: 9999;
+}
+.row-actions {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  white-space: nowrap;
 }
 </style>
 

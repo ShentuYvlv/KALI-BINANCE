@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -74,12 +75,21 @@ func (ctrl *FeatureController) Get() {
 		countQuery = countQuery.Filter("pin", 1)
 	}
 	orderFields := []string{"-Pin", "ID"}
+	openInterestSort := ""
 	if strings.HasPrefix(paramsSort, "percent_change") {
 		if paramsSort == "percent_change+" {
 			orderFields = []string{"-Pin", "-PercentChange", "ID"}
 		} else if paramsSort == "percent_change-" {
 			orderFields = []string{"-Pin", "PercentChange", "ID"}
 		}
+	} else if strings.HasPrefix(paramsSort, "quote_volume") {
+		if paramsSort == "quote_volume+" {
+			orderFields = []string{"-Pin", "-QuoteVolume", "ID"}
+		} else if paramsSort == "quote_volume-" {
+			orderFields = []string{"-Pin", "QuoteVolume", "ID"}
+		}
+	} else if strings.HasPrefix(paramsSort, "open_interest") {
+		openInterestSort = paramsSort
 	}
 	_, err := query.OrderBy(orderFields...).Limit(limit, offset).All(&symbols,
 		"ID", "Symbol", "PercentChange", "Close", "Open", "Low", "High", "Enable", "UpdateTime", "BaseVolume", "QuoteVolume", "TradeCount", "Leverage", "MarginType",
@@ -115,6 +125,18 @@ func (ctrl *FeatureController) Get() {
 			}(i)
 		}
 		wg.Wait()
+	}
+
+	if openInterestSort != "" {
+		asc := openInterestSort == "open_interest-"
+		sort.Slice(symbols, func(i, j int) bool {
+			vi, _ := strconv.ParseFloat(symbols[i].OpenInterest, 64)
+			vj, _ := strconv.ParseFloat(symbols[j].OpenInterest, 64)
+			if asc {
+				return vi < vj
+			}
+			return vi > vj
+		})
 	}
 	
 	ctrl.Ctx.Resp(map[string]interface{} {
