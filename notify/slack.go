@@ -48,6 +48,7 @@ func SlackApi(content string, pusher Pusher) {
 		slack_channel_id = notifyConfig.SlackChannelId
 	}
 
+	go SaveNotification("slack", pusher, content)
 	go func() {
 		url := "https://slack.com/api/chat.postMessage"
 		

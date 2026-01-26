@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"fmt"
 	"math"
 	"strconv"
 	"strings"
@@ -102,7 +103,13 @@ func (ctrl *FeatureController) Get() {
 				sem <- struct{}{}
 				res, err := binance.GetOpenInterest(symbols[idx].Symbol)
 				if err == nil && res != nil {
-					symbols[idx].OpenInterest = res.OpenInterest
+					openInterestValue := res.OpenInterest
+					oiNum, oiErr := strconv.ParseFloat(res.OpenInterest, 64)
+					priceNum, priceErr := strconv.ParseFloat(symbols[idx].Close, 64)
+					if oiErr == nil && priceErr == nil {
+						openInterestValue = fmt.Sprintf("%f", oiNum*priceNum)
+					}
+					symbols[idx].OpenInterest = openInterestValue
 				}
 				<-sem
 			}(i)

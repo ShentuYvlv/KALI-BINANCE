@@ -83,6 +83,7 @@ export default {
     deliveryTrade: 'Delivery Trade',
     logs: 'background logs',
     notifyConfig: 'notify config',
+    notifyMessages: 'Notifications',
   },
   navbar: {
     dashboard: 'Dashboard',

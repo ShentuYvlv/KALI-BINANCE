@@ -124,6 +124,20 @@ const tradeRouter = [
     ],
   },
   {
+    path: '/notifications',
+    component: Layout,
+    redirect: '/notifications/list',
+    meta: { title: 'notifyMessages', icon: 'table' },
+    children: [
+      {
+        path: 'list',
+        name: 'notifyMessages',
+        component: () => import('@/views/notifications/index'),
+        meta: { title: 'notifyMessages', affix: false, noCache: true },
+      },
+    ],
+  },
+  {
     path: '/rush',
     component: Layout,
     redirect: '/rush/new-coin',

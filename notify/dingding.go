@@ -49,6 +49,7 @@ func DingDingApi(content string, pusher Pusher) {
     dingding_word = notifyConfig.DingDingWord
   }
   logs.Info("DingDingApi:", dingding_token, notifyConfig.ID)
+  go SaveNotification("dingding", pusher, content)
   
 	go func () {
 		url := "https://oapi.dingtalk.com/robot/send?access_token=" + dingding_token

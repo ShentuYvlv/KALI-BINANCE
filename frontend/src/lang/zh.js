@@ -83,6 +83,7 @@ export default {
     deliveryTrade: '币本位交易',
     logs: '后台日志',
     notifyConfig: '通知配置',
+    notifyMessages: '通知消息',
   },
   navbar: {
     dashboard: '首页',

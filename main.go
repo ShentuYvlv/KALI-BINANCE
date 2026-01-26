@@ -82,6 +82,7 @@ func registerModels() {
 	orm.RegisterModel(new(models.FuturesPosition))
 	orm.RegisterModel(new(models.FuturesOrder))
 	orm.RegisterModel(new(models.NotifyConfig))
+	orm.RegisterModel(new(models.NotifyMessage))
 	
 	setDriver(driver) // 设置数据库驱动
 	syncDb() // 同步数据库
@@ -121,6 +122,7 @@ func syncDb() {
 	// merge notice into listen schema/data
 	models.EnsureListenSchema()
 	models.MigrateNoticeToListen()
+	models.EnsureNotifyMessageSchema()
 }
 
 func registerMiddlewares() {

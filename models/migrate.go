@@ -21,6 +21,11 @@ func EnsureListenSchema() {
 	_ = addColumnIgnoreErr(o, "listen_symbols", "quantity", "TEXT")
 }
 
+func EnsureNotifyMessageSchema() {
+	o := orm.NewOrm()
+	_ = addColumnIgnoreErr(o, "notify_messages", "level", "TEXT")
+}
+
 func MigrateNoticeToListen() {
 	o := orm.NewOrm()
 	var notices []NoticeSymbols

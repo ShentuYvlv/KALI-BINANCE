@@ -92,8 +92,10 @@ export default {
 
 <style scoped>
 .pagination-container {
-  background: #fff;
-  padding: 32px 16px;
+  background: var(--surface-1);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  padding: 16px;
 }
 .pagination-container.hidden {
   display: none;

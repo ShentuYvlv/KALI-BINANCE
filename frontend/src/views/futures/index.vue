@@ -131,19 +131,9 @@
             </template>
           </el-table-column>
           <el-table-column
-            label="交易量"
+            label="成交额(USDT)"
             align="center"
             width="110"
-            show-overflow-tooltip
-          >
-            <template slot-scope="scope">
-              {{ formatMetric(scope.row.baseVolume) }}
-            </template>
-          </el-table-column>
-          <el-table-column
-            label="市值"
-            align="center"
-            width="120"
             show-overflow-tooltip
           >
             <template slot-scope="scope">
@@ -274,19 +264,9 @@
             </template>
           </el-table-column>
           <el-table-column
-            label="交易量"
+            label="成交额(USDT)"
             align="center"
             width="110"
-            show-overflow-tooltip
-          >
-            <template slot-scope="scope">
-              {{ formatMetric(scope.row.baseVolume) }}
-            </template>
-          </el-table-column>
-          <el-table-column
-            label="市值"
-            align="center"
-            width="120"
             show-overflow-tooltip
           >
             <template slot-scope="scope">

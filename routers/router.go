@@ -14,6 +14,10 @@ func init() {
 	web.Router("/update-market-condition", &controllers.IndexController{}, "post:UpdateMarketCondition") // 手动触发更新市场状态
 	web.Router("/notify-config", &controllers.NotifyConfigController{}, "get:Get;post:Post") // 列表查询和新增
 	web.Router("/notify-config/:id", &controllers.NotifyConfigController{}, "delete:Delete;put:Edit") // 更新和删除
+	web.Router("/notifications", &controllers.NotifyMessageController{}, "get:Get") // 通知消息列表
+	web.Router("/notifications/modules", &controllers.NotifyMessageController{}, "get:Modules") // 通知模块列表
+	web.Router("/notifications/:id", &controllers.NotifyMessageController{}, "delete:Delete") // 删除通知消息
+	web.Router("/notifications/clear", &controllers.NotifyMessageController{}, "post:Clear") // 清空通知消息
 
 	web.Router("/features", &controllers.FeatureController{}, "get:Get;post:Post") // 列表查询和新增
 	web.Router("/features-options", &controllers.FeatureController{}, "get:GetOptions") // 列表查询

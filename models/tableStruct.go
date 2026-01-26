@@ -53,6 +53,20 @@ type Order struct {
 	ClosedTime int64 `orm:"column(closedTime)" json:"closedTime"` // 平仓时间(只针对 side = 'open' 的订单)
 }
 
+type NotifyMessage struct {
+	ID int64 `orm:"column(id)" json:"id"`
+	Module string `orm:"column(module)" json:"module"`
+	Channel string `orm:"column(channel)" json:"channel"`
+	Level string `orm:"column(level)" json:"level"`
+	Title string `orm:"column(title)" json:"title"`
+	Content string `orm:"column(content);type(text)" json:"content"`
+	CreateTime int64 `orm:"column(createTime)" json:"createTime"`
+}
+
+func (m *NotifyMessage) TableName() string {
+	return "notify_messages"
+}
+
 type Symbols struct {
 	ID int64 `orm:"column(id)" json:"id"`
 	Symbol string `orm:"column(symbol)" json:"symbol"`
