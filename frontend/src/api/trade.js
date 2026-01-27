@@ -145,6 +145,14 @@ export function getLocalFuturesOpenOrders(query = {}) {
   })
 }
 
+export function getFuturesInsight(query = {}) {
+  return request({
+    url: '/futures/insight',
+    method: 'get',
+    params: query,
+  })
+}
+
 export function testStrategyRule(id, data) {
   return request({
     url: `/features/strategy-rule/test/${id}`,

@@ -196,7 +196,7 @@
           <el-table-column
             :label="$t('table.actions')"
             align="center"
-            width="160"
+            width="210"
             class-name="small-padding fixed-width"
           >
             <template slot-scope="{row}">
@@ -206,6 +206,12 @@
                   size="mini"
                   @click="openConfigDrawer(row)"
                 >{{ $t('table.edit') }}
+                </el-button>
+                <el-button
+                  type="success"
+                  size="mini"
+                  @click="openInsightDrawer(row)"
+                >{{ $t('trade.insight') }}
                 </el-button>
                 <el-button
                   type="danger"
@@ -339,7 +345,7 @@
           <el-table-column
             :label="$t('table.actions')"
             align="center"
-            width="160"
+            width="210"
             class-name="small-padding fixed-width"
           >
             <template slot-scope="{row}">
@@ -349,6 +355,12 @@
                   size="mini"
                   @click="openConfigDrawer(row)"
                 >{{ $t('table.edit') }}
+                </el-button>
+                <el-button
+                  type="success"
+                  size="mini"
+                  @click="openInsightDrawer(row)"
+                >{{ $t('trade.insight') }}
                 </el-button>
                 <el-button
                   type="danger"
@@ -436,6 +448,10 @@
         <el-button type="primary" size="mini" @click="applyDrawerConfig">{{ $t('table.confirm') }}</el-button>
       </div>
     </el-drawer>
+    <insight-drawer
+      :visible.sync="insightVisible"
+      :symbol="insightSymbol"
+    />
     <!-- add data -->
     <el-dialog :title="dialogTitle" :visible.sync="dialogFormVisible">
       <el-form
@@ -1162,6 +1178,7 @@ import { getFeature, getFeatures, setFeature, addFeature, delFeature, enableFeat
 import { getList } from '@/api/strategy_template'
 import Pagination from '@/components/Pagination'
 import SymbolSuggestInput from '@/components/SymbolSuggestInput'
+import InsightDrawer from './components/InsightDrawer'
 import { round } from 'mathjs'
 
 import CodeMirror from 'codemirror'
@@ -1221,6 +1238,7 @@ export default {
     codemirror,
     Pagination,
     SymbolSuggestInput,
+    InsightDrawer,
   },
   data() {
     return {
@@ -1286,6 +1304,8 @@ export default {
         loss: undefined,
       },
       drawerTarget: null,
+      insightVisible: false,
+      insightSymbol: '',
 
       dialogStrategyTitle: '',
       dialogStrategyVisible: false,
@@ -1663,6 +1683,10 @@ export default {
         loss: row.loss,
       }
       this.drawerVisible = true
+    },
+    openInsightDrawer(row) {
+      this.insightSymbol = row.symbol
+      this.insightVisible = true
     },
     async applyDrawerConfig() {
       if (!this.drawerTarget) {

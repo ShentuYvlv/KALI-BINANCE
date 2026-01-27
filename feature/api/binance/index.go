@@ -490,6 +490,91 @@ func GetFundingRateHistory(params FundingRateParams) (res []*futures.FundingRate
 	return res, err
 }
 
+// 获取合约持仓量历史
+// @see https://developers.binance.com/docs/zh-CN/derivatives/usds-margined-futures/market-data/Open-Interest
+func GetOpenInterestHistory(symbol string, period string, limit int) (res []*futures.OpenInterestStatistic, err error) {
+	service := futuresClient.NewOpenInterestStatisticsService().Symbol(symbol).Period(period)
+	if limit != 0 {
+		service = service.Limit(limit)
+	}
+	res, err = service.Do(context.Background())
+	if err != nil {
+		logs.Error(err)
+		return nil, err
+	}
+	return res, err
+}
+
+// 大户账户数多空比
+func GetTopLongShortAccountRatio(symbol string, period string, limit int) (res []*futures.TopLongShortAccountRatio, err error) {
+	service := futuresClient.NewTopLongShortAccountRatioService().Symbol(symbol).Period(period)
+	if limit != 0 {
+		service = service.Limit(uint32(limit))
+	}
+	res, err = service.Do(context.Background())
+	if err != nil {
+		logs.Error(err)
+		return nil, err
+	}
+	return res, err
+}
+
+// 大户持仓量多空比
+func GetTopLongShortPositionRatio(symbol string, period string, limit int) (res []*futures.TopLongShortPositionRatio, err error) {
+	service := futuresClient.NewTopLongShortPositionRatioService().Symbol(symbol).Period(period)
+	if limit != 0 {
+		service = service.Limit(uint32(limit))
+	}
+	res, err = service.Do(context.Background())
+	if err != nil {
+		logs.Error(err)
+		return nil, err
+	}
+	return res, err
+}
+
+// 多空账户数比
+func GetGlobalLongShortAccountRatio(symbol string, period string, limit int) (res []*futures.LongShortRatio, err error) {
+	service := futuresClient.NewLongShortRatioService().Symbol(symbol).Period(period)
+	if limit != 0 {
+		service = service.Limit(limit)
+	}
+	res, err = service.Do(context.Background())
+	if err != nil {
+		logs.Error(err)
+		return nil, err
+	}
+	return res, err
+}
+
+// 合约主动买卖量(买卖量与比例)
+func GetTakerLongShortRatio(symbol string, period string, limit int) (res []*futures.TakerLongShortRatio, err error) {
+	service := futuresClient.NewTakerLongShortRatioService().Symbol(symbol).Period(period)
+	if limit != 0 {
+		service = service.Limit(uint32(limit))
+	}
+	res, err = service.Do(context.Background())
+	if err != nil {
+		logs.Error(err)
+		return nil, err
+	}
+	return res, err
+}
+
+// 标记价格 K 线数据
+func GetMarkPriceKlines(symbol string, interval string, limit int) (res []*futures.Kline, err error) {
+	service := futuresClient.NewMarkPriceKlinesService().Symbol(symbol).Interval(interval)
+	if limit != 0 {
+		service = service.Limit(limit)
+	}
+	res, err = service.Do(context.Background())
+	if err != nil {
+		logs.Error(err)
+		return nil, err
+	}
+	return res, err
+}
+
 // websocket 订阅全市场最新价格变化，只有币价格变化才会推送(24小时变化)
 var flagWsFutures = 0
 func UpdateCoinByWs(systemConfig *models.Config, retryNum int64) {

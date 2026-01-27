@@ -332,6 +332,7 @@ export default {
     period: '周期',
     pin: '置顶',
     notYet: '暂未开放',
+    insight: '指标',
   },
   assets: {
     'asset': '资产',

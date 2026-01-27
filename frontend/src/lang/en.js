@@ -329,6 +329,7 @@ export default {
     period: 'period',
     pin: 'pin',
     notYet: 'not yet',
+    insight: 'insight',
   },
   assets: {
     'asset': 'asset',
