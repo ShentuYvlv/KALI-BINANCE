@@ -52,55 +52,102 @@ func (ctrl *FeatureController) Get() {
 	
 	o := orm.NewOrm()
 	var symbols []models.Symbols
-	query := o.QueryTable("symbols")
-	countQuery := o.QueryTable("symbols")
-	if symbol_type != "" {
-		query = query.Filter("type", symbol_type)
-		countQuery = countQuery.Filter("type", symbol_type)
-	}
-	if symbol != "" {
-		query = query.Filter("symbol__contains", symbol)
-		countQuery = countQuery.Filter("symbol__contains", symbol)
-	}
-	if enable != "" {
-		query = query.Filter("enable", enable)
-		countQuery = countQuery.Filter("enable", enable)
-	}
-	if margin_type != "" {
-		query = query.Filter("marginType", margin_type)
-		countQuery = countQuery.Filter("marginType", margin_type)
-	}
-	if pin != "" {
-		query = query.Filter("pin", 1)
-		countQuery = countQuery.Filter("pin", 1)
-	}
-	orderFields := []string{"-Pin", "ID"}
+	var total int64
 	openInterestSort := ""
-	if strings.HasPrefix(paramsSort, "percent_change") {
-		if paramsSort == "percent_change+" {
-			orderFields = []string{"-Pin", "-PercentChange", "ID"}
-		} else if paramsSort == "percent_change-" {
-			orderFields = []string{"-Pin", "PercentChange", "ID"}
+	usedFundingSort := false
+	if strings.HasPrefix(paramsSort, "now_funding_rate") || strings.HasPrefix(paramsSort, "funding_rate") {
+		orderDir := "DESC"
+		if strings.HasSuffix(paramsSort, "-") {
+			orderDir = "ASC"
 		}
-	} else if strings.HasPrefix(paramsSort, "quote_volume") {
-		if paramsSort == "quote_volume+" {
-			orderFields = []string{"-Pin", "-QuoteVolume", "ID"}
-		} else if paramsSort == "quote_volume-" {
-			orderFields = []string{"-Pin", "QuoteVolume", "ID"}
+		conditions := []string{"1=1"}
+		args := []interface{}{}
+		if symbol_type != "" {
+			conditions = append(conditions, "s.type = ?")
+			args = append(args, symbol_type)
 		}
-	} else if strings.HasPrefix(paramsSort, "open_interest") {
-		openInterestSort = paramsSort
+		if symbol != "" {
+			conditions = append(conditions, "s.symbol LIKE ?")
+			args = append(args, "%"+symbol+"%")
+		}
+		if enable != "" {
+			conditions = append(conditions, "s.enable = ?")
+			args = append(args, enable)
+		}
+		if margin_type != "" {
+			conditions = append(conditions, "s.marginType = ?")
+			args = append(args, margin_type)
+		}
+		if pin != "" {
+			conditions = append(conditions, "s.pin = 1")
+		}
+		whereClause := strings.Join(conditions, " AND ")
+		orderClause := "ORDER BY s.pin DESC, (CASE WHEN f.now_funding_rate IS NULL OR f.now_funding_rate = '' THEN 1 ELSE 0 END) ASC, CAST(f.now_funding_rate AS REAL) " + orderDir + ", s.id ASC"
+		listSQL := "SELECT s.* FROM symbols s LEFT JOIN symbol_funding_rates f ON s.symbol = f.symbol WHERE " + whereClause + " " + orderClause + " LIMIT ? OFFSET ?"
+		listArgs := append(args, limit, offset)
+		_, err := o.Raw(listSQL, listArgs...).QueryRows(&symbols)
+		if err != nil {
+			ctrl.Ctx.Resp(utils.ResJson(400, nil, err.Error()))
+			return
+		}
+		countSQL := "SELECT COUNT(1) FROM symbols s LEFT JOIN symbol_funding_rates f ON s.symbol = f.symbol WHERE " + whereClause
+		err = o.Raw(countSQL, args...).QueryRow(&total)
+		if err != nil {
+			ctrl.Ctx.Resp(utils.ResJson(400, nil, err.Error()))
+			return
+		}
+		usedFundingSort = true
 	}
-	_, err := query.OrderBy(orderFields...).Limit(limit, offset).All(&symbols,
-		"ID", "Symbol", "PercentChange", "Close", "Open", "Low", "High", "Enable", "UpdateTime", "BaseVolume", "QuoteVolume", "TradeCount", "Leverage", "MarginType",
-		"StepSize", "TickSize", "Usdt", "Profit", "Loss", "StrategyType", "Pin", "Sort", "Type",
-	)
-	if err != nil {
-		ctrl.Ctx.Resp(utils.ResJson(400, nil, err.Error()))
-	}
-	total, err := countQuery.Count()
-	if err != nil {
-		ctrl.Ctx.Resp(utils.ResJson(400, nil, err.Error()))
+	if !usedFundingSort {
+		query := o.QueryTable("symbols")
+		countQuery := o.QueryTable("symbols")
+		if symbol_type != "" {
+			query = query.Filter("type", symbol_type)
+			countQuery = countQuery.Filter("type", symbol_type)
+		}
+		if symbol != "" {
+			query = query.Filter("symbol__contains", symbol)
+			countQuery = countQuery.Filter("symbol__contains", symbol)
+		}
+		if enable != "" {
+			query = query.Filter("enable", enable)
+			countQuery = countQuery.Filter("enable", enable)
+		}
+		if margin_type != "" {
+			query = query.Filter("marginType", margin_type)
+			countQuery = countQuery.Filter("marginType", margin_type)
+		}
+		if pin != "" {
+			query = query.Filter("pin", 1)
+			countQuery = countQuery.Filter("pin", 1)
+		}
+		orderFields := []string{"-Pin", "ID"}
+		if strings.HasPrefix(paramsSort, "percent_change") {
+			if paramsSort == "percent_change+" {
+				orderFields = []string{"-Pin", "-PercentChange", "ID"}
+			} else if paramsSort == "percent_change-" {
+				orderFields = []string{"-Pin", "PercentChange", "ID"}
+			}
+		} else if strings.HasPrefix(paramsSort, "quote_volume") {
+			if paramsSort == "quote_volume+" {
+				orderFields = []string{"-Pin", "-QuoteVolume", "ID"}
+			} else if paramsSort == "quote_volume-" {
+				orderFields = []string{"-Pin", "QuoteVolume", "ID"}
+			}
+		} else if strings.HasPrefix(paramsSort, "open_interest") {
+			openInterestSort = paramsSort
+		}
+		_, err := query.OrderBy(orderFields...).Limit(limit, offset).All(&symbols,
+			"ID", "Symbol", "PercentChange", "Close", "Open", "Low", "High", "Enable", "UpdateTime", "BaseVolume", "QuoteVolume", "TradeCount", "Leverage", "MarginType",
+			"StepSize", "TickSize", "Usdt", "Profit", "Loss", "StrategyType", "Pin", "Sort", "Type",
+		)
+		if err != nil {
+			ctrl.Ctx.Resp(utils.ResJson(400, nil, err.Error()))
+		}
+		total, err = countQuery.Count()
+		if err != nil {
+			ctrl.Ctx.Resp(utils.ResJson(400, nil, err.Error()))
+		}
 	}
 
 	if len(symbols) > 0 {

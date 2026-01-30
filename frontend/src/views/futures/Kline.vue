@@ -85,16 +85,26 @@
     <div class="kline-body" ref="fullscreenRoot">
       <div class="kline-trades">
         <div class="side-section trades">
-          <div class="side-title">
-            最新成交
-            <span class="status" :class="tradesStatus">{{ statusLabel(tradesStatus) }}</span>
+          <div class="side-header">
+            <div class="side-tabs">
+              <button class="tab-btn" :class="{ active: tradeTab === 'trades' }" @click="tradeTab = 'trades'">
+                最新成交
+              </button>
+              <button class="tab-btn" :class="{ active: tradeTab === 'flow' }" @click="tradeTab = 'flow'">
+                市场异动
+              </button>
+            </div>
+            <div class="side-actions">
+              <i class="el-icon-rank" />
+              <i class="el-icon-more" />
+            </div>
           </div>
           <div class="trades-header">
-            <span>价格</span>
-            <span>数量</span>
+            <span>价格 (USDT)</span>
+            <span>数量 (USDT)</span>
             <span>时间</span>
           </div>
-          <div class="trades-list">
+          <div class="trades-list" v-if="tradeTab === 'trades'">
             <div
               v-for="(item, index) in trades"
               :key="item.id || 'trade-' + index"
@@ -106,38 +116,48 @@
               <span class="time">{{ formatTradeTime(item.time) }}</span>
             </div>
           </div>
+          <div v-else class="empty-tip">暂无数据</div>
         </div>
       </div>
       <div class="kline-orderbook">
         <div class="side-section">
-          <div class="side-title">
-            订单簿
-            <span class="status" :class="depthStatus">{{ statusLabel(depthStatus) }}</span>
+          <div class="side-header">
+            <div class="side-title-text">订单簿</div>
+            <div class="side-actions">
+              <span v-if="depthStatus !== 'connected'" class="status-pill">{{ statusLabel(depthStatus) }}</span>
+              <i class="el-icon-more" />
+              <i class="el-icon-close" />
+            </div>
           </div>
           <div class="orderbook">
+            <div class="orderbook-top">
+              <span class="precision-pill">{{ tickSize || '0.00001' }}</span>
+            </div>
             <div class="orderbook-header">
-              <span>价格</span>
-              <span>数量</span>
-              <span>累计</span>
+              <span>价格 (USDT)</span>
+              <span>数量 (USDT)</span>
+              <span>合计 (USDT)</span>
             </div>
-            <div class="orderbook-list asks">
-              <div v-for="(item, index) in depthAsks" :key="'ask-' + index" class="orderbook-row sell">
-                <span class="depth-bg" :style="{ width: (item.depthPct || 0) + '%' }" />
-                <span class="price">{{ formatNumber(item.price, pricePrecision) }}</span>
-                <span class="qty">{{ formatNumber(item.qty, qtyPrecision) }}</span>
-                <span class="total">{{ formatNumber(item.total, qtyPrecision) }}</span>
+            <div class="orderbook-body">
+              <div class="orderbook-list asks">
+                <div v-for="(item, index) in depthAsks" :key="'ask-' + index" class="orderbook-row sell">
+                  <span class="depth-bg" :style="{ width: (item.depthPct || 0) + '%' }" />
+                  <span class="price">{{ formatNumber(item.price, pricePrecision) }}</span>
+                  <span class="qty">{{ formatNumber(item.qty, qtyPrecision) }}</span>
+                  <span class="total">{{ formatNumber(item.total, qtyPrecision) }}</span>
+                </div>
               </div>
-            </div>
-            <div class="orderbook-mid" :class="lastTradeSide">
-              <span class="label">最新</span>
-              <span class="price">{{ formatNumber(lastTradePrice, pricePrecision) }}</span>
-            </div>
-            <div class="orderbook-list bids">
-              <div v-for="(item, index) in depthBids" :key="'bid-' + index" class="orderbook-row buy">
-                <span class="depth-bg" :style="{ width: (item.depthPct || 0) + '%' }" />
-                <span class="price">{{ formatNumber(item.price, pricePrecision) }}</span>
-                <span class="qty">{{ formatNumber(item.qty, qtyPrecision) }}</span>
-                <span class="total">{{ formatNumber(item.total, qtyPrecision) }}</span>
+              <div class="orderbook-mid" :class="lastTradeSide">
+                <span class="mid-price">{{ formatNumber(lastTradePrice, pricePrecision) }}</span>
+                <span class="mid-ref">{{ formatNumber(lastTradePrice, pricePrecision) }}</span>
+              </div>
+              <div class="orderbook-list bids">
+                <div v-for="(item, index) in depthBids" :key="'bid-' + index" class="orderbook-row buy">
+                  <span class="depth-bg" :style="{ width: (item.depthPct || 0) + '%' }" />
+                  <span class="price">{{ formatNumber(item.price, pricePrecision) }}</span>
+                  <span class="qty">{{ formatNumber(item.qty, qtyPrecision) }}</span>
+                  <span class="total">{{ formatNumber(item.total, qtyPrecision) }}</span>
+                </div>
               </div>
             </div>
           </div>
@@ -236,6 +256,7 @@ export default {
       depthBids: [],
       depthAsks: [],
       trades: [],
+      tradeTab: 'trades',
       depthLimit: 20,
       tradesLimit: 100,
       depthMaxTotal: 1,
@@ -1308,7 +1329,7 @@ export default {
 
 .kline-trades,
 .kline-orderbook {
-  width: 300px;
+  width: 340px;
   background: #0c1017;
   border-right: 1px solid #1b2230;
   display: flex;
@@ -1318,7 +1339,7 @@ export default {
 }
 
 .kline-trades {
-  width: 320px;
+  width: 340px;
 }
 
 .kline-tools {
@@ -1327,6 +1348,10 @@ export default {
   border-right: 1px solid #1b2230;
   padding: 10px 8px;
   overflow-y: auto;
+}
+
+.kline-orderbook .side-section {
+  flex: 1;
 }
 
 .side-section {
@@ -1343,13 +1368,71 @@ export default {
   flex: 1;
 }
 
-.side-title {
-  font-size: 12px;
-  color: #9fb0c6;
-  margin-bottom: 8px;
+.side-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.side-title-text {
+  font-size: 12px;
+  color: #d0d6de;
+  font-weight: 600;
+}
+
+.side-tabs {
+  display: flex;
+  gap: 12px;
+}
+
+.tab-btn {
+  background: transparent;
+  border: none;
+  color: #9fb0c6;
+  font-size: 12px;
+  padding: 0 0 6px;
+  cursor: pointer;
+  position: relative;
+}
+
+.tab-btn.active {
+  color: #f59e0b;
+}
+
+.tab-btn.active::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2px;
+  height: 2px;
+  background: #f59e0b;
+  border-radius: 2px;
+}
+
+.side-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #6b7280;
+}
+
+.side-actions i {
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.side-actions i:hover {
+  color: #cbd5e1;
+}
+
+.status-pill {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: rgba(251, 191, 36, 0.12);
+  color: #fbbf24;
 }
 
 .status {
@@ -1381,29 +1464,54 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  flex: 1;
+  min-height: 0;
+}
+
+.orderbook-top {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.precision-pill {
+  font-size: 11px;
+  color: #9fb0c6;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: #131a24;
+  border: 1px solid #263041;
 }
 
 .orderbook-header {
   display: grid;
-  grid-template-columns: 1.6fr 1fr 1fr;
-  column-gap: 8px;
-  font-size: 10px;
+  grid-template-columns: minmax(110px, 1.2fr) minmax(80px, 1fr) minmax(90px, 1fr);
+  column-gap: 10px;
+  font-size: 11px;
   color: #6d7a8d;
+}
+
+.orderbook-body {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto minmax(0, 1fr);
+  flex: 1;
+  min-height: 0;
+  gap: 6px;
 }
 
 .orderbook-list {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  max-height: 220px;
+  height: 100%;
+  min-height: 0;
   overflow: auto;
 }
 
 .orderbook-row {
   display: grid;
-  grid-template-columns: 1.6fr 1fr 1fr;
-  column-gap: 8px;
-  font-size: 11px;
+  grid-template-columns: minmax(110px, 1.2fr) minmax(80px, 1fr) minmax(90px, 1fr);
+  column-gap: 10px;
+  font-size: 12px;
   position: relative;
   padding: 2px 6px;
   border-radius: 6px;
@@ -1433,8 +1541,6 @@ export default {
   position: relative;
   z-index: 1;
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .orderbook-row.sell .price {
@@ -1464,33 +1570,38 @@ export default {
 
 .orderbook-mid {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 6px 8px;
-  border-radius: 8px;
+  justify-content: space-between;
+  padding: 8px 6px;
+  border-radius: 10px;
   background: #0d141f;
   border: 1px solid #1b2230;
-  font-size: 12px;
   margin: 4px 0;
 }
 
-.orderbook-mid .label {
-  color: #8fa1b8;
+.orderbook-mid .mid-price {
+  font-size: 18px;
+  font-weight: 700;
 }
 
-.orderbook-mid.buy .price {
+.orderbook-mid .mid-ref {
+  font-size: 12px;
+  color: #7c8798;
+}
+
+.orderbook-mid.buy .mid-price {
   color: #4ade80;
 }
 
-.orderbook-mid.sell .price {
+.orderbook-mid.sell .mid-price {
   color: #f87171;
 }
 
 .trades-header {
   display: grid;
-  grid-template-columns: 1.6fr 1fr 1fr;
-  column-gap: 8px;
-  font-size: 10px;
+  grid-template-columns: minmax(110px, 1.2fr) minmax(90px, 1fr) minmax(80px, 1fr);
+  column-gap: 10px;
+  font-size: 11px;
   color: #6d7a8d;
   margin-bottom: 6px;
 }
@@ -1505,9 +1616,9 @@ export default {
 
 .trade-row {
   display: grid;
-  grid-template-columns: 1.6fr 1fr 1fr;
-  column-gap: 8px;
-  font-size: 11px;
+  grid-template-columns: minmax(110px, 1.2fr) minmax(90px, 1fr) minmax(80px, 1fr);
+  column-gap: 10px;
+  font-size: 12px;
   padding: 2px 6px;
   border-radius: 6px;
   font-variant-numeric: tabular-nums;
@@ -1517,8 +1628,12 @@ export default {
 
 .trade-row span {
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
+}
+
+.empty-tip {
+  color: #6b7280;
+  font-size: 12px;
+  padding: 8px 0;
 }
 
 .trade-row .price {

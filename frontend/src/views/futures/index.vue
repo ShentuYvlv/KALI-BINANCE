@@ -75,7 +75,7 @@
       </div>
     </div>
     <el-tabs v-model="search.symbol_type" @tab-click="handleTabClick">
-      <el-tab-pane label="USDT" name="USDT">
+
         <el-table
           v-loading="listLoading"
           :data="list"
@@ -91,7 +91,7 @@
         >
           <el-table-column
             :label="$t('trade.pin')"
-            width="50"
+            min-width="70"
             align="center"
           >
             <template slot-scope="{ row }">
@@ -102,7 +102,7 @@
             :label="$t('trade.coin')"
             align="center"
             show-overflow-tooltip
-            width="110"
+            min-width="120"
           >
             <template slot-scope="scope">
               {{ scope.row.symbol }}
@@ -112,7 +112,7 @@
             :label="$t('trade.nowPrice')"
             align="center"
             show-overflow-tooltip
-            width="110"
+            min-width="120"
           >
             <template slot-scope="scope">
               {{ round(scope.row.close, 10) }}
@@ -121,7 +121,7 @@
           <el-table-column
             label="24h↑↓"
             align="center"
-            width="90"
+            min-width="110"
             show-overflow-tooltip
             prop="percent_change"
             sortable="custom"
@@ -135,7 +135,7 @@
           <el-table-column
             label="成交额(USDT)"
             align="center"
-            width="110"
+            min-width="130"
             show-overflow-tooltip
             prop="quote_volume"
             sortable="custom"
@@ -148,7 +148,7 @@
           <el-table-column
             label="开仓量"
             align="center"
-            width="110"
+            min-width="130"
             show-overflow-tooltip
             prop="open_interest"
             sortable="custom"
@@ -156,6 +156,50 @@
           >
             <template slot-scope="scope">
               {{ formatMetric(scope.row.openInterest) }}
+            </template>
+          </el-table-column>
+          <el-table-column
+            :label="$t('trade.nowFundRate')"
+            align="center"
+            min-width="140"
+            show-overflow-tooltip
+            prop="now_funding_rate"
+            sortable="custom"
+            :sort-orders="['descending', 'ascending', null]"
+          >
+            <template slot-scope="scope">
+              <span
+                v-if="scope.row.now_funding_rate !== undefined && scope.row.now_funding_rate !== null"
+                :style="{ color: Math.abs(round(scope.row.now_funding_rate * 100, 4)) > 1 ? 'red' : 'green' }"
+              >
+                {{ round(scope.row.now_funding_rate * 100, 4) }}
+              </span>
+              <span v-else>-</span>
+            </template>
+          </el-table-column>
+          <el-table-column
+            label="下次结算时间"
+            align="center"
+            min-width="160"
+            show-overflow-tooltip
+          >
+            <template slot-scope="scope">
+              {{ scope.row.next_funding_time ? parseTime(scope.row.next_funding_time) : '-' }}
+            </template>
+          </el-table-column>
+          <el-table-column
+            :label="$t('trade.history')"
+            align="center"
+            min-width="110"
+            class-name="small-padding fixed-width"
+          >
+            <template slot-scope="{row}">
+              <el-button
+                type="primary"
+                size="mini"
+                @click="openFundingHistory(row)"
+              >{{ $t('trade.history') }}
+              </el-button>
             </template>
           </el-table-column>
           <!-- <el-table-column
@@ -183,7 +227,7 @@
           </el-select>
         </template>
       </el-table-column> -->
-          <el-table-column :label="$t('trade.enable')" align="center" width="75">
+          <el-table-column :label="$t('trade.enable')" align="center" min-width="90">
             <template slot-scope="{ row }">
               <el-switch
                 v-model="row.enable"
@@ -196,7 +240,7 @@
           <el-table-column
             :label="$t('table.actions')"
             align="center"
-            width="270"
+            min-width="360"
             class-name="small-padding fixed-width"
           >
             <template slot-scope="{row}">
@@ -212,155 +256,6 @@
                   size="mini"
                   @click="openKlinePage(row)"
                 >{{ $t('trade.kline') }}
-                </el-button>
-                <el-button
-                  type="success"
-                  size="mini"
-                  @click="openInsightDrawer(row)"
-                >{{ $t('trade.insight') }}
-                </el-button>
-                <el-button
-                  type="danger"
-                  size="mini"
-                  @click="del(row)"
-                >{{ $t('table.delete') }}
-                </el-button>
-              </div>
-            </template>
-          </el-table-column>
-        </el-table>
-      </el-tab-pane>
-      <el-tab-pane label="USDC" name="USDC">
-        <el-table
-          v-loading="listLoading"
-          :data="list"
-          element-loading-text="Loading"
-          border
-          fit
-          size="mini"
-          :row-key="rowKey"
-          :expand-row-keys="expandKeys"
-          highlight-current-row
-          @sort-change="sortChange"
-          @expand-change="expandChange"
-        >
-          <el-table-column
-            :label="$t('trade.pin')"
-            width="50"
-            align="center"
-          >
-            <template slot-scope="{ row }">
-              <el-rate v-model="row.pin_read" :max="1" @change="editPin(row)" />
-            </template>
-          </el-table-column>
-          <el-table-column
-            :label="$t('trade.coin')"
-            align="center"
-            show-overflow-tooltip
-            width="110"
-          >
-            <template slot-scope="scope">
-              {{ scope.row.symbol }}
-            </template>
-          </el-table-column>
-          <el-table-column
-            :label="$t('trade.nowPrice')"
-            align="center"
-            show-overflow-tooltip
-            width="110"
-          >
-            <template slot-scope="scope">
-              {{ round(scope.row.close, 10) }}
-            </template>
-          </el-table-column>
-          <el-table-column
-            label="24h"
-            align="center"
-            width="90"
-            show-overflow-tooltip
-            prop="percent_change"
-            sortable="custom"
-            :sort-orders="['descending', 'ascending', null]"
-          >
-            <template slot-scope="scope">
-              <span v-if="scope.row.percentChange < 0" style="color: red;">{{ scope.row.percentChange }}%↓ </span>
-              <span v-else style="color: green;">{{ scope.row.percentChange }}%↑ </span>
-            </template>
-          </el-table-column>
-          <el-table-column
-            label="成交额(USDT)"
-            align="center"
-            width="110"
-            show-overflow-tooltip
-            prop="quote_volume"
-            sortable="custom"
-            :sort-orders="['descending', 'ascending', null]"
-          >
-            <template slot-scope="scope">
-              {{ formatMetric(scope.row.quoteVolume) }}
-            </template>
-          </el-table-column>
-          <el-table-column
-            label="开仓量"
-            align="center"
-            width="110"
-            show-overflow-tooltip
-            prop="open_interest"
-            sortable="custom"
-            :sort-orders="['descending', 'ascending', null]"
-          >
-            <template slot-scope="scope">
-              {{ formatMetric(scope.row.openInterest) }}
-            </template>
-          </el-table-column>
-          <!-- <el-table-column
-        :label="$t('trade.klineInterval')"
-        align="center"
-        width="110"
-      >
-        <template slot-scope="scope">
-          <el-select v-model="scope.row.kline_interval" size="mini" @change="edit(scope.row)">
-            <el-option label="1m" value="1m" />
-            <el-option label="3m" value="3m" />
-            <el-option label="5m" value="5m" />
-            <el-option label="15m" value="15m" />
-            <el-option label="30m" value="30m" />
-            <el-option label="1h" value="1h" />
-            <el-option label="2h" value="2h" />
-            <el-option label="4h" value="4h" />
-            <el-option label="6h" value="6h" />
-            <el-option label="8h" value="8h" />
-            <el-option label="12h" value="12h" />
-            <el-option label="1d" value="1d" />
-            <el-option label="3d" value="3d" />
-            <el-option label="1w" value="1w" />
-            <el-option label="1M" value="1M" />
-          </el-select>
-        </template>
-      </el-table-column> -->
-          <el-table-column :label="$t('trade.enable')" align="center" width="75">
-            <template slot-scope="{ row }">
-              <el-switch
-                v-model="row.enable"
-                active-color="#13ce66"
-                inactive-color="#dcdfe6"
-                @change="isChangeBuy($event, row)"
-              />
-            </template>
-          </el-table-column>
-          <el-table-column
-            :label="$t('table.actions')"
-            align="center"
-            width="270"
-            class-name="small-padding fixed-width"
-          >
-            <template slot-scope="{row}">
-              <div class="row-actions">
-                <el-button
-                  type="primary"
-                  size="mini"
-                  @click="openConfigDrawer(row)"
-                >{{ $t('table.edit') }}
                 </el-button>
                 <el-button
                   type="success"
@@ -458,6 +353,11 @@
       :visible.sync="insightVisible"
       :symbol="insightSymbol"
     />
+    <el-dialog :title="fundingHistoryTitle" :visible.sync="fundingHistoryVisible" width="80%">
+      <div style="height: 520px;">
+        <apexchart type="line" height="520" :options="fundingHistoryOptions" :series="fundingHistorySeries" />
+      </div>
+    </el-dialog>
     <!-- add data -->
     <el-dialog :title="dialogTitle" :visible.sync="dialogFormVisible">
       <el-form
@@ -1181,10 +1081,13 @@
 
 <script>
 import { getFeature, getFeatures, setFeature, addFeature, delFeature, enableFeature, batchEdit, testStrategyRule } from '@/api/trade'
+import { getFundingRates, getFundingRateHistory } from '@/api/listenCoin'
 import { getList } from '@/api/strategy_template'
 import Pagination from '@/components/Pagination'
 import SymbolSuggestInput from '@/components/SymbolSuggestInput'
 import InsightDrawer from './components/InsightDrawer'
+import VueApexCharts from 'vue-apexcharts'
+import { parseTime } from '@/utils'
 import { round } from 'mathjs'
 
 import CodeMirror from 'codemirror'
@@ -1245,6 +1148,7 @@ export default {
     Pagination,
     SymbolSuggestInput,
     InsightDrawer,
+    apexchart: VueApexCharts,
   },
   data() {
     return {
@@ -1254,6 +1158,44 @@ export default {
       total: 0,
       allList: [],
       list: [],
+      fundingHistory: [],
+      fundingHistoryMeta: [],
+      fundingHistorySeries: [
+        { name: this.$t('trade.fundRate'), data: [] },
+      ],
+      fundingHistoryOptions: {
+        chart: {
+          type: 'line',
+          toolbar: { show: true },
+          zoom: { enabled: true },
+          foreColor: '#B3C2D4',
+        },
+        stroke: {
+          width: 2,
+          curve: 'smooth',
+        },
+        grid: {
+          borderColor: 'rgba(149, 176, 203, 0.12)',
+        },
+        xaxis: {
+          type: 'datetime',
+          labels: {
+            datetimeUTC: false,
+            style: { colors: '#8EA2B8' },
+          },
+        },
+        yaxis: {
+          labels: {
+            formatter: (val) => `${Number(val).toFixed(4)}%`,
+            style: { colors: '#8EA2B8' },
+          },
+        },
+        tooltip: {
+          custom: null,
+        },
+      },
+      fundingHistoryTitle: this.$t('trade.fundRateHistory'),
+      fundingHistoryVisible: false,
       sort: '',
       listLoading: false,
       serviceLoading: false,
@@ -1369,6 +1311,7 @@ export default {
     this.search.page = parseInt(this.search.page) || 1
     this.search.limit = parseInt(this.search.limit) || 50
     this.interval = localStorage.getItem('refreshInterval') || 30
+    this.fundingHistoryOptions.tooltip.custom = this.buildFundingHistoryTooltip
     await this.fetchData()
   },
   beforeDestroy() {
@@ -1379,6 +1322,7 @@ export default {
       const { data } = await getList()
       this.strategyTemplates = data
     },
+    parseTime,
     formatMetric(value) {
       if (value === undefined || value === null || value === '') {
         return '-'
@@ -1599,10 +1543,34 @@ export default {
     async getFutures() {
       const search = this.search
       search.symbol = search.symbol.trim().toUpperCase()
-      const { data: { list, total }} = await getFeatures({ sort: this.sort, ...search })
+      const [featureRes, fundingRes] = await Promise.allSettled([
+        getFeatures({ sort: this.sort, ...search }),
+        getFundingRates({ symbol: search.symbol || '' }),
+      ])
+      if (featureRes.status !== 'fulfilled') {
+        return
+      }
+      const { list, total } = featureRes.value.data
+      const fundingRates = fundingRes.status === 'fulfilled' ? fundingRes.value.data : []
+      const fundingRateMap = {}
+      if (Array.isArray(fundingRates)) {
+        fundingRates.forEach((item) => {
+          if (item && item.symbol) {
+            fundingRateMap[item.symbol] = item
+          }
+        })
+      }
       this.list = list.map(item => {
         const { pin, enable, ...other } = item
-        return { enable: enable > 0, pin_read: pin, pin, ...other }
+        const funding = fundingRateMap[item.symbol] || {}
+        return {
+          enable: enable > 0,
+          pin_read: pin,
+          pin,
+          now_funding_rate: funding.now_funding_rate,
+          next_funding_time: funding.next_funding_time,
+          ...other,
+        }
       })
       this.total = total
     },
@@ -1659,6 +1627,42 @@ export default {
           }
         })
         .catch(() => {})
+    },
+    async openFundingHistory(row) {
+      if (!row || !row.symbol) {
+        return
+      }
+      this.fundingHistoryTitle = `${row.symbol} ` + this.$t('trade.fundRateHistory')
+      this.fundingHistoryVisible = true
+      const { data } = await getFundingRateHistory({ symbol: row.symbol })
+      const history = Array.isArray(data) ? data.slice().reverse() : []
+      this.fundingHistory = history
+      this.fundingHistoryMeta = history
+      this.fundingHistorySeries = [
+        {
+          name: this.$t('trade.fundRate'),
+          data: history.map(item => ({
+            x: item.fundingTime,
+            y: round(item.fundingRate * 100, 4),
+          })),
+        },
+      ]
+    },
+    buildFundingHistoryTooltip({ dataPointIndex }) {
+      const item = this.fundingHistoryMeta[dataPointIndex]
+      if (!item) {
+        return ''
+      }
+      const rate = round(item.fundingRate * 100, 4)
+      const time = this.parseTime(item.fundingTime)
+      const price = item.markPrice
+      return `
+        <div style="padding:8px 10px;background:#0F1720;border:1px solid rgba(149,176,203,0.18);border-radius:8px;">
+          <div style="font-size:12px;color:#8EA2B8;margin-bottom:4px;">${time}</div>
+          <div style="font-size:14px;color:#E6EEF7;">资金费率：${rate}%</div>
+          <div style="font-size:12px;color:#B3C2D4;margin-top:2px;">标记价格：${price}</div>
+        </div>
+      `
     },
     enableAll(flag) {
       const text = flag === 1 ? this.$t('table.enableAllCoins') : this.$t('table.disableAllCoins')
