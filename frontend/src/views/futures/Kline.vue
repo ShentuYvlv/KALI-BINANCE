@@ -83,42 +83,6 @@
       </div>
     </div>
     <div class="kline-body" ref="fullscreenRoot">
-      <div class="kline-trades">
-        <div class="side-section trades">
-          <div class="side-header">
-            <div class="side-tabs">
-              <button class="tab-btn" :class="{ active: tradeTab === 'trades' }" @click="tradeTab = 'trades'">
-                最新成交
-              </button>
-              <button class="tab-btn" :class="{ active: tradeTab === 'flow' }" @click="tradeTab = 'flow'">
-                市场异动
-              </button>
-            </div>
-            <div class="side-actions">
-              <i class="el-icon-rank" />
-              <i class="el-icon-more" />
-            </div>
-          </div>
-          <div class="trades-header">
-            <span>价格 (USDT)</span>
-            <span>数量 (USDT)</span>
-            <span>时间</span>
-          </div>
-          <div class="trades-list" v-if="tradeTab === 'trades'">
-            <div
-              v-for="(item, index) in trades"
-              :key="item.id || 'trade-' + index"
-              class="trade-row"
-              :class="[item.side, { flash: item.flash, big: item.big }]"
-            >
-              <span class="price">{{ formatNumber(item.price, pricePrecision) }}</span>
-              <span class="qty">{{ formatNumber(item.qty, qtyPrecision) }}</span>
-              <span class="time">{{ formatTradeTime(item.time) }}</span>
-            </div>
-          </div>
-          <div v-else class="empty-tip">暂无数据</div>
-        </div>
-      </div>
       <div class="kline-orderbook">
         <div class="side-section">
           <div class="side-header">
@@ -161,6 +125,42 @@
               </div>
             </div>
           </div>
+        </div>
+      </div>
+      <div class="kline-trades">
+        <div class="side-section trades">
+          <div class="side-header">
+            <div class="side-tabs">
+              <button class="tab-btn" :class="{ active: tradeTab === 'trades' }" @click="tradeTab = 'trades'">
+                最新成交
+              </button>
+              <button class="tab-btn" :class="{ active: tradeTab === 'flow' }" @click="tradeTab = 'flow'">
+                市场异动
+              </button>
+            </div>
+            <div class="side-actions">
+              <i class="el-icon-rank" />
+              <i class="el-icon-more" />
+            </div>
+          </div>
+          <div class="trades-header">
+            <span>价格 (USDT)</span>
+            <span>数量 (USDT)</span>
+            <span>时间</span>
+          </div>
+          <div class="trades-list" v-if="tradeTab === 'trades'">
+            <div
+              v-for="(item, index) in trades"
+              :key="item.id || 'trade-' + index"
+              class="trade-row"
+              :class="[item.side, { flash: item.flash, big: item.big }]"
+            >
+              <span class="price">{{ formatNumber(item.price, pricePrecision) }}</span>
+              <span class="qty">{{ formatNumber(item.qty, qtyPrecision) }}</span>
+              <span class="time">{{ formatTradeTime(item.time) }}</span>
+            </div>
+          </div>
+          <div v-else class="empty-tip">暂无数据</div>
         </div>
       </div>
       <div class="kline-tools">
@@ -1329,17 +1329,17 @@ export default {
 
 .kline-trades,
 .kline-orderbook {
-  width: 340px;
-  background: #0c1017;
+  width: 320px;
+  background: #0b0f14;
   border-right: 1px solid #1b2230;
   display: flex;
   flex-direction: column;
-  padding: 10px 10px 12px;
+  padding: 8px;
   overflow: hidden;
 }
 
 .kline-trades {
-  width: 340px;
+  width: 320px;
 }
 
 .kline-tools {
@@ -1358,10 +1358,10 @@ export default {
   display: flex;
   flex-direction: column;
   min-height: 0;
-  background: #0f1115;
-  border: 1px solid #1b2230;
-  border-radius: 12px;
-  padding: 10px;
+  background: #0f131a;
+  border: 1px solid #1c232f;
+  border-radius: 10px;
+  padding: 8px;
 }
 
 .side-section.trades {
@@ -1377,7 +1377,7 @@ export default {
 
 .side-title-text {
   font-size: 12px;
-  color: #d0d6de;
+  color: #e5e7eb;
   font-weight: 600;
 }
 
@@ -1389,7 +1389,7 @@ export default {
 .tab-btn {
   background: transparent;
   border: none;
-  color: #9fb0c6;
+  color: #8b95a7;
   font-size: 12px;
   padding: 0 0 6px;
   cursor: pointer;
@@ -1397,7 +1397,7 @@ export default {
 }
 
 .tab-btn.active {
-  color: #f59e0b;
+  color: #f0b90b;
 }
 
 .tab-btn.active::after {
@@ -1407,7 +1407,7 @@ export default {
   right: 0;
   bottom: -2px;
   height: 2px;
-  background: #f59e0b;
+  background: #f0b90b;
   border-radius: 2px;
 }
 
@@ -1475,19 +1475,30 @@ export default {
 
 .precision-pill {
   font-size: 11px;
-  color: #9fb0c6;
+  color: #9aa4b2;
   padding: 2px 8px;
   border-radius: 10px;
-  background: #131a24;
-  border: 1px solid #263041;
+  background: #141922;
+  border: 1px solid #252b36;
 }
 
 .orderbook-header {
   display: grid;
-  grid-template-columns: minmax(110px, 1.2fr) minmax(80px, 1fr) minmax(90px, 1fr);
-  column-gap: 10px;
+  grid-template-columns: minmax(90px, 1.2fr) minmax(80px, 1fr) minmax(90px, 1fr);
+  column-gap: 8px;
   font-size: 11px;
-  color: #6d7a8d;
+  color: #6f7a8c;
+  padding: 2px 4px;
+}
+
+.orderbook-header span:first-child,
+.trades-header span:first-child {
+  text-align: left;
+}
+
+.orderbook-header span:not(:first-child),
+.trades-header span:not(:first-child) {
+  text-align: right;
 }
 
 .orderbook-body {
@@ -1505,18 +1516,37 @@ export default {
   height: 100%;
   min-height: 0;
   overflow: auto;
+  position: relative;
+  padding-right: 2px;
+}
+
+.orderbook-list.asks::before,
+.orderbook-list.bids::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.orderbook-list.asks::before {
+  background: linear-gradient(180deg, rgba(246, 70, 93, 0.12), rgba(246, 70, 93, 0));
+}
+
+.orderbook-list.bids::before {
+  background: linear-gradient(0deg, rgba(14, 203, 129, 0.12), rgba(14, 203, 129, 0));
 }
 
 .orderbook-row {
   display: grid;
-  grid-template-columns: minmax(110px, 1.2fr) minmax(80px, 1fr) minmax(90px, 1fr);
-  column-gap: 10px;
+  grid-template-columns: minmax(90px, 1.2fr) minmax(80px, 1fr) minmax(90px, 1fr);
+  column-gap: 8px;
   font-size: 12px;
   position: relative;
-  padding: 2px 6px;
-  border-radius: 6px;
+  padding: 1px 4px;
+  border-radius: 4px;
   overflow: hidden;
-  background: rgba(15, 20, 30, 0.35);
+  background: transparent;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
   align-items: center;
@@ -1527,14 +1557,14 @@ export default {
   top: 0;
   bottom: 0;
   right: 0;
-  background: rgba(248, 113, 113, 0.15);
+  background: rgba(246, 70, 93, 0.22);
   z-index: 0;
 }
 
 .orderbook-row.buy .depth-bg {
   left: 0;
   right: auto;
-  background: rgba(74, 222, 128, 0.15);
+  background: rgba(14, 203, 129, 0.22);
 }
 
 .orderbook-row span {
@@ -1544,11 +1574,11 @@ export default {
 }
 
 .orderbook-row.sell .price {
-  color: #f87171;
+  color: #f6465d;
 }
 
 .orderbook-row.buy .price {
-  color: #4ade80;
+  color: #0ecb81;
 }
 
 .orderbook-row .price {
@@ -1572,11 +1602,12 @@ export default {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 6px;
-  border-radius: 10px;
-  background: #0d141f;
-  border: 1px solid #1b2230;
-  margin: 4px 0;
+  padding: 6px 4px;
+  border-radius: 0;
+  background: transparent;
+  border-top: 1px solid #1b2230;
+  border-bottom: 1px solid #1b2230;
+  margin: 2px 0;
 }
 
 .orderbook-mid .mid-price {
@@ -1590,20 +1621,21 @@ export default {
 }
 
 .orderbook-mid.buy .mid-price {
-  color: #4ade80;
+  color: #0ecb81;
 }
 
 .orderbook-mid.sell .mid-price {
-  color: #f87171;
+  color: #f6465d;
 }
 
 .trades-header {
   display: grid;
-  grid-template-columns: minmax(110px, 1.2fr) minmax(90px, 1fr) minmax(80px, 1fr);
-  column-gap: 10px;
+  grid-template-columns: minmax(90px, 1.2fr) minmax(90px, 1fr) minmax(80px, 1fr);
+  column-gap: 8px;
   font-size: 11px;
-  color: #6d7a8d;
+  color: #6f7a8c;
   margin-bottom: 6px;
+  padding: 2px 4px;
 }
 
 .trades-list {
@@ -1612,18 +1644,27 @@ export default {
   gap: 4px;
   overflow: auto;
   min-height: 0;
+  padding-right: 2px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.trades-list::-webkit-scrollbar {
+  width: 0;
+  height: 0;
 }
 
 .trade-row {
   display: grid;
-  grid-template-columns: minmax(110px, 1.2fr) minmax(90px, 1fr) minmax(80px, 1fr);
-  column-gap: 10px;
+  grid-template-columns: minmax(90px, 1.2fr) minmax(90px, 1fr) minmax(80px, 1fr);
+  column-gap: 8px;
   font-size: 12px;
-  padding: 2px 6px;
-  border-radius: 6px;
+  padding: 1px 4px;
+  border-radius: 4px;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
   align-items: center;
+  background: transparent;
 }
 
 .trade-row span {
@@ -1646,11 +1687,11 @@ export default {
 }
 
 .trade-row.buy .price {
-  color: #4ade80;
+  color: #0ecb81;
 }
 
 .trade-row.sell .price {
-  color: #f87171;
+  color: #f6465d;
 }
 
 .trade-row .qty,
