@@ -153,6 +153,14 @@ export function getFuturesInsight(query = {}) {
   })
 }
 
+export function getFuturesKline(query = {}) {
+  return request({
+    url: '/futures/kline',
+    method: 'get',
+    params: query,
+  })
+}
+
 export function testStrategyRule(id, data) {
   return request({
     url: `/features/strategy-rule/test/${id}`,

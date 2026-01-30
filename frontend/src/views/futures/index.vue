@@ -196,7 +196,7 @@
           <el-table-column
             :label="$t('table.actions')"
             align="center"
-            width="210"
+            width="270"
             class-name="small-padding fixed-width"
           >
             <template slot-scope="{row}">
@@ -206,6 +206,12 @@
                   size="mini"
                   @click="openConfigDrawer(row)"
                 >{{ $t('table.edit') }}
+                </el-button>
+                <el-button
+                  type="warning"
+                  size="mini"
+                  @click="openKlinePage(row)"
+                >{{ $t('trade.kline') }}
                 </el-button>
                 <el-button
                   type="success"
@@ -345,7 +351,7 @@
           <el-table-column
             :label="$t('table.actions')"
             align="center"
-            width="210"
+            width="270"
             class-name="small-padding fixed-width"
           >
             <template slot-scope="{row}">
@@ -1687,6 +1693,17 @@ export default {
     openInsightDrawer(row) {
       this.insightSymbol = row.symbol
       this.insightVisible = true
+    },
+    openKlinePage(row) {
+      const routeData = this.$router.resolve({
+        path: '/futures/symbols/kline',
+        query: {
+          symbol: row.symbol,
+          tickSize: row.tickSize,
+          stepSize: row.stepSize,
+        },
+      })
+      window.open(routeData.href, '_blank')
     },
     async applyDrawerConfig() {
       if (!this.drawerTarget) {

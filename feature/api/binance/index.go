@@ -218,6 +218,29 @@ func GetKlineData(symbol string, interval string, limit int) (klines []*futures.
 	return klines, err
 }
 
+// @param symbol 交易对名称，例如：BTCUSDT
+// @param interval K线的时间间隔，例如：1m, 3m, 5m, 15m, 30m, 1h等
+// @param limit 返回的K线数据条数
+// @param startTime 起始时间(毫秒)
+// @param endTime 截止时间(毫秒)
+func GetKlineDataRange(symbol string, interval string, limit int, startTime int64, endTime int64) (klines []*futures.Kline, err error) {
+	service := futuresClient.NewKlinesService().Symbol(symbol).Interval(interval).Limit(limit)
+	if startTime > 0 {
+		service = service.StartTime(startTime)
+	}
+	if endTime > 0 {
+		service = service.EndTime(endTime)
+	}
+	klines, err = service.Do(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	sort.Slice(klines, func(i, j int) bool {
+		return klines[i].OpenTime < klines[j].OpenTime // 按照时间升序()
+	})
+	return klines, err
+}
+
 // 限价买入
 // @see https://binance-docs.github.io/apidocs/futures/cn/#trade-3
 // @returns /doc/order.js

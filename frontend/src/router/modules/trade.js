@@ -16,6 +16,13 @@ const tradeRouter = [
         meta: { title: 'futuresTrade', affix: false, noCache: false },
       },
       {
+        path: 'symbols/kline',
+        name: 'FuturesKline',
+        component: () => import('@/views/futures/Kline'),
+        meta: { title: 'futuresKline', affix: false, noCache: true },
+        hidden: true,
+      },
+      {
         path: 'list',
         name: 'OrderList',
         component: () => import('@/views/order/index'),

@@ -5,3 +5,4 @@ db/coin.db-wal
 db/coin.db
 *.session.sql
 .vscode/
+KLineChart/

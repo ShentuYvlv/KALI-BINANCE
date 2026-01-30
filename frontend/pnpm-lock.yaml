@@ -50,6 +50,9 @@ importers:
       jszip:
         specifier: 3.2.1
         version: 3.2.1
+      klinecharts:
+        specifier: ^10.0.0-beta1
+        version: 10.0.0-beta1
       mathjs:
         specifier: ^13.2.0
         version: 13.2.3
@@ -4430,6 +4433,9 @@ packages:
   kleur@3.0.3:
     resolution: {integrity: sha512-eTIzlVOSUR+JxdDFepEYcBMtZ9Qqdef+rnzWdRZuMbOywu5tO2w2N7rqjoANZ5k9vywhL6Br1VRjUIgTQx4E8w==}
     engines: {node: '>=6'}
+
+  klinecharts@10.0.0-beta1:
+    resolution: {integrity: sha512-5ZxFGjJeZqt9+q45lZDhApC3kdgrk51i27uSpIELgXJLNgfSc0anlb8XkU+52LVrBYnTv9dFr8/Q7lG81vIV1w==}
 
   launch-editor-middleware@2.10.0:
     resolution: {integrity: sha512-RzZu7MeVlE3p1H6Sadc2BhuDGAj7bkeDCBpNq/zSENP4ohJGhso00k5+iYaRwKshIpiOAhMmimce+5D389xmSg==}
@@ -12843,6 +12849,8 @@ snapshots:
   kind-of@6.0.3: {}
 
   kleur@3.0.3: {}
+
+  klinecharts@10.0.0-beta1: {}
 
   launch-editor-middleware@2.10.0:
     dependencies:

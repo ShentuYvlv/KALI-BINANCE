@@ -29,6 +29,7 @@
     "js-cookie": "2.2.0",
     "jsonlint": "1.6.3",
     "jszip": "3.2.1",
+    "klinecharts": "^10.0.0-beta1",
     "mathjs": "^13.2.0",
     "normalize.css": "7.0.0",
     "nprogress": "0.2.0",
