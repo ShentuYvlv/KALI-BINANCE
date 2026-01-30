@@ -7,6 +7,10 @@
     position: relative;
   }
 
+  .main-container.kline-mode {
+    margin-left: 0 !important;
+  }
+
   .sidebar-container {
     transition: width 0.28s;
     width: $sideBarWidth !important;

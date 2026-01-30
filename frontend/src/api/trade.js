@@ -161,6 +161,22 @@ export function getFuturesKline(query = {}) {
   })
 }
 
+export function getFuturesDepth(query = {}) {
+  return request({
+    url: '/futures/depth',
+    method: 'get',
+    params: query,
+  })
+}
+
+export function getFuturesTrades(query = {}) {
+  return request({
+    url: '/futures/trades',
+    method: 'get',
+    params: query,
+  })
+}
+
 export function testStrategyRule(id, data) {
   return request({
     url: `/features/strategy-rule/test/${id}`,

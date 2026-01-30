@@ -2,7 +2,7 @@
   <div :class="classObj" class="app-wrapper">
     <div v-if="device==='mobile'&&sidebar.opened" class="drawer-bg" @click="handleClickOutside" />
     <sidebar v-if="!isKlinePage" class="sidebar-container" />
-    <div :class="{hasTagsView:needTagsView && !isKlinePage}" class="main-container">
+    <div :class="{hasTagsView:needTagsView && !isKlinePage, 'kline-mode': isKlinePage}" class="main-container">
       <div v-if="!isKlinePage" :class="{'fixed-header':fixedHeader}">
         <navbar />
         <tags-view v-if="needTagsView" />

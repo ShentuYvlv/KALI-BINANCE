@@ -62,6 +62,10 @@ func init() {
 	web.Router("/futures/insight", &controllers.FuturesInsightController{}, "get:Get") // 合约单币指标聚合
 	web.Router("/futures/kline", &controllers.FuturesKlineController{}, "get:Get") // 合约K线
 	web.Router("/ws/futures/kline", &controllers.FuturesKlineController{}, "get:Ws") // 合约K线WS
+	web.Router("/ws/futures/depth", &controllers.FuturesMarketController{}, "get:DepthWs") // 合约盘口WS
+	web.Router("/ws/futures/trades", &controllers.FuturesMarketController{}, "get:TradesWs") // 合约成交WS
+	web.Router("/futures/depth", &controllers.FuturesMarketController{}, "get:DepthSnapshot") // 合约盘口REST
+	web.Router("/futures/trades", &controllers.FuturesMarketController{}, "get:TradesSnapshot") // 合约成交REST
 	
 	web.Router("/fund-rate/eat", &controllers.EatRateController{}, "get:Get;post:Post") // 列表查询和新增
 	web.Router("/fund-rate/eat/:id", &controllers.EatRateController{}, "delete:Delete;put:Edit") // 更新和删除

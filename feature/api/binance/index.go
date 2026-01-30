@@ -14,7 +14,6 @@ import (
 	"github.com/beego/beego/v2/core/config"
 )
 
-
 var api_key, _ = config.String("binance::api_key")
 var api_secret, _ = config.String("binance::api_secret")
 var proxy_url, _ = config.String("binance::proxy_url")
@@ -33,8 +32,8 @@ func init() {
 }
 
 type OrderParams struct {
-	Symbol    string
-	OrderID   int64
+	Symbol  string
+	OrderID int64
 }
 
 type ListOrderParams struct {
@@ -66,9 +65,9 @@ type PositionParams struct {
 }
 
 // @returns /doc/position.js
-func GetPosition(positionParams PositionParams) (res []*futures.PositionRisk, err error){
+func GetPosition(positionParams PositionParams) (res []*futures.PositionRisk, err error) {
 	query := futuresClient.NewGetPositionRiskService()
-	if (positionParams.Symbol != "") {
+	if positionParams.Symbol != "" {
 		query = query.Symbol(positionParams.Symbol)
 	}
 	res, err = query.Do(context.Background())
@@ -81,9 +80,9 @@ func GetPosition(positionParams PositionParams) (res []*futures.PositionRisk, er
 
 // @see https://developers.binance.com/docs/zh-CN/derivatives/usds-margined-futures/trade/rest-api/Position-Information-V3
 // 这个版本仅返回有持仓或挂单的交易对，但是缺少了 Leverage 字段
-func GetPositionV3(positionParams PositionParams) (res []*futures.PositionRiskV3, err error){
+func GetPositionV3(positionParams PositionParams) (res []*futures.PositionRiskV3, err error) {
 	query := futuresClient.NewGetPositionRiskV3Service()
-	if (positionParams.Symbol != "") {
+	if positionParams.Symbol != "" {
 		query = query.Symbol(positionParams.Symbol)
 	}
 	res, err = query.Do(context.Background())
@@ -103,21 +102,21 @@ type IncomeParams struct {
 }
 
 // @returns /doc/income.js
-func GetIncome(incomeParams IncomeParams) (res []*futures.IncomeHistory, err error){
+func GetIncome(incomeParams IncomeParams) (res []*futures.IncomeHistory, err error) {
 	query := futuresClient.NewGetIncomeHistoryService()
-	if (incomeParams.Symbol != "") {
+	if incomeParams.Symbol != "" {
 		query = query.Symbol(incomeParams.Symbol)
 	}
-	if (incomeParams.IncomeType != "") {
+	if incomeParams.IncomeType != "" {
 		query = query.IncomeType(incomeParams.IncomeType)
 	}
-	if (incomeParams.StartTime != 0) {
+	if incomeParams.StartTime != 0 {
 		query = query.StartTime(incomeParams.StartTime)
 	}
-	if (incomeParams.EndTime != 0) {
+	if incomeParams.EndTime != 0 {
 		query = query.EndTime(incomeParams.EndTime)
 	}
-	if (incomeParams.Limit != 0) {
+	if incomeParams.Limit != 0 {
 		query = query.Limit(incomeParams.Limit)
 	}
 	res, err = query.Do(context.Background())
@@ -131,9 +130,9 @@ func GetIncome(incomeParams IncomeParams) (res []*futures.IncomeHistory, err err
 
 func GetDepth(symbol string, limits ...int) (res *futures.DepthResponse, err error) {
 	limit := 100 // 默认值
-    if len(limits) != 0 {
-        limit = limits[0]
-    }
+	if len(limits) != 0 {
+		limit = limits[0]
+	}
 	res, err = futuresClient.NewDepthService().Symbol(symbol).Limit(limit).Do(context.Background())
 	if err != nil {
 		logs.Error(err)
@@ -167,9 +166,9 @@ func GetOpenInterest(symbol string) (res *futures.OpenInterest, err error) {
 // @see https://binance-docs.github.io/apidocs/futures/cn/#38a975b802
 func GetDepthAvgPrice(symbol string, limits ...int) (buyPrice float64, sellPrice float64, err error) {
 	limit := 50 // 默认值
-    if len(limits) != 0 {
-        limit = limits[0]
-    }
+	if len(limits) != 0 {
+		limit = limits[0]
+	}
 	res, err := futuresClient.NewDepthService().Symbol(symbol).Limit(limit).Do(context.Background())
 	if err != nil {
 		logs.Error(err)
@@ -179,6 +178,21 @@ func GetDepthAvgPrice(symbol string, limits ...int) (buyPrice float64, sellPrice
 	// logs.Info(utils.ToJson(res))
 	// logs.Info(buyPrice, sellPrice)
 	return buyPrice, sellPrice, err
+}
+
+// 获取近期成交
+// @see https://developers.binance.com/docs/zh-CN/derivatives/usds-margined-futures/market-data/Recent-Trades-List
+func GetRecentTrades(symbol string, limit int) (res []*futures.Trade, err error) {
+	query := futuresClient.NewRecentTradesService().Symbol(symbol)
+	if limit > 0 {
+		query = query.Limit(limit)
+	}
+	res, err = query.Do(context.Background())
+	if err != nil {
+		logs.Error(err)
+		return nil, err
+	}
+	return res, err
 }
 
 func avgPrice(data *futures.DepthResponse) (buyPrice float64, sellPrice float64) {
@@ -257,7 +271,7 @@ func BuyLimit(symbol string, quantity float64, price float64, positionSide futur
 	if err != nil {
 		return nil, err
 	}
-		
+
 	return order, err
 }
 
@@ -277,7 +291,7 @@ func SellLimit(symbol string, quantity float64, price float64, positionSide futu
 	if err != nil {
 		return nil, err
 	}
-		
+
 	return order, err
 }
 
@@ -296,7 +310,7 @@ func BuyMarket(symbol string, quantity float64, positionSide futures.PositionSid
 	if err != nil {
 		return nil, err
 	}
-		
+
 	return order, err
 }
 
@@ -315,13 +329,13 @@ func SellMarket(symbol string, quantity float64, positionSide futures.PositionSi
 	if err != nil {
 		return nil, err
 	}
-		
+
 	return order, err
 }
 
 // 撤销订单
 // @see https://binance-docs.github.io/apidocs/futures/cn/#trade-6
-func CancelOrder(symbol string, orderId int64) (res *futures.CancelOrderResponse, err error){
+func CancelOrder(symbol string, orderId int64) (res *futures.CancelOrderResponse, err error) {
 	res, err = futuresClient.NewCancelOrderService().Symbol(symbol).OrderID(orderId).Do(context.Background())
 	if err != nil {
 		return nil, err
@@ -421,7 +435,7 @@ func GetOpenOrder(symbols ...string) (res []*futures.Order, err error) {
 
 // 获取交易规则和交易对
 // @see https://binance-docs.github.io/apidocs/futures/cn/#0f3f2d5ee7
-func GetExchangeInfo()(res *futures.ExchangeInfo, err error) {
+func GetExchangeInfo() (res *futures.ExchangeInfo, err error) {
 	res, err = futuresClient.NewExchangeInfoService().Do(context.Background())
 	if err != nil {
 		return nil, err
@@ -439,15 +453,15 @@ func OrderTakeProfit(symbol string, stopPrice float64, side futures.SideType, po
 		Side(side).
 		PositionSide(positionSide).
 		Type(futures.OrderType(futures.AlgoOrderTypeTakeProfitMarket)). // 止盈市价单
-		StopPrice(strconv.FormatFloat(stopPrice, 'f', -1, 64)). // 触发价格
-		ClosePosition(true). // 是否市价全平(和quantity参数互斥)
+		StopPrice(strconv.FormatFloat(stopPrice, 'f', -1, 64)).         // 触发价格
+		ClosePosition(true).                                            // 是否市价全平(和quantity参数互斥)
 		// Quantity(strconv.FormatFloat(quantity, 'f', -1, 64)).
 		// TimeInForce(binance.TimeInForceTypeGTC).
 		Do(context.Background())
 	if err != nil {
 		return nil, err
 	}
-		
+
 	return order, err
 }
 
@@ -460,15 +474,15 @@ func OrderStopLoss(symbol string, stopPrice float64, side futures.SideType, posi
 		Side(side).
 		PositionSide(positionSide).
 		Type(futures.OrderType(futures.AlgoOrderTypeStopMarket)). // 止损限价单
-		StopPrice(strconv.FormatFloat(stopPrice, 'f', -1, 64)). // 触发价格
-		ClosePosition(true). // 是否市价全平(和quantity参数互斥)
+		StopPrice(strconv.FormatFloat(stopPrice, 'f', -1, 64)).   // 触发价格
+		ClosePosition(true).                                      // 是否市价全平(和quantity参数互斥)
 		// Quantity(strconv.FormatFloat(quantity, 'f', -1, 64)).
 		// TimeInForce(binance.TimeInForceTypeGTC).
 		Do(context.Background())
 	if err != nil {
 		return nil, err
 	}
-		
+
 	return order, err
 }
 
@@ -600,6 +614,7 @@ func GetMarkPriceKlines(symbol string, interval string, limit int) (res []*futur
 
 // websocket 订阅全市场最新价格变化，只有币价格变化才会推送(24小时变化)
 var flagWsFutures = 0
+
 func UpdateCoinByWs(systemConfig *models.Config, retryNum int64) {
 	if retryNum > 0 {
 		logs.Info("futures ws restart num:", retryNum)
@@ -607,13 +622,13 @@ func UpdateCoinByWs(systemConfig *models.Config, retryNum int64) {
 	var o = orm.NewOrm()
 	// futures.WebsocketKeepalive = true
 	_, _, err := futures.WsAllMarketTickerServe(func(event futures.WsAllMarketTickerEvent) {
-		if (systemConfig.WsFuturesEnable == 1) {
-			if (flagWsFutures == 0) {
+		if systemConfig.WsFuturesEnable == 1 {
+			if flagWsFutures == 0 {
 				logs.Info("futures ws start")
 				flagWsFutures = 1
 			}
 		} else {
-			if (flagWsFutures == 1) {
+			if flagWsFutures == 1 {
 				logs.Info("futures ws stop")
 				flagWsFutures = 0
 			}
@@ -628,11 +643,11 @@ func UpdateCoinByWs(systemConfig *models.Config, retryNum int64) {
 				ticker.LowPrice,
 				ticker.HighPrice,
 				ticker.Time,
-				ticker.BaseVolume, // 成交量
+				ticker.BaseVolume,  // 成交量
 				ticker.QuoteVolume, // 成交额
-				ticker.CloseQty, // 最新成交价格上的成交量
-				ticker.TradeCount, // 成交数
-				
+				ticker.CloseQty,    // 最新成交价格上的成交量
+				ticker.TradeCount,  // 成交数
+
 				ticker.Symbol,
 			).Exec()
 			// if (ticker.Symbol == "BTCUSDT") {
@@ -641,12 +656,12 @@ func UpdateCoinByWs(systemConfig *models.Config, retryNum int64) {
 		}
 	}, func(err error) {
 		logs.Error("futures ws run error:", err)
-		UpdateCoinByWs(systemConfig, retryNum + 1)
+		UpdateCoinByWs(systemConfig, retryNum+1)
 	})
 	if err != nil {
 		logs.Error("futures ws start error:", err)
 		time.Sleep(time.Second * 30) // 30 秒间隔
-		UpdateCoinByWs(systemConfig, retryNum + 1)
+		UpdateCoinByWs(systemConfig, retryNum+1)
 		return
 	}
 }
@@ -671,7 +686,7 @@ func WsUserData() {
 	logs.Info("futures_user_data ws start: auto update db futures position")
 	o := orm.NewOrm()
 	doneC, _, err := futures.WsUserDataServe(listenKey, func(event *futures.WsUserDataEvent) {
-		if (event.Event == "ACCOUNT_UPDATE") {
+		if event.Event == "ACCOUNT_UPDATE" {
 			for _, v := range event.AccountUpdate.Positions {
 				floatAmount, _ := strconv.ParseFloat(v.Amount, 64)
 				var position models.FuturesPosition
@@ -697,7 +712,7 @@ func WsUserData() {
 					o.Update(&position)
 				}
 			}
-		}  else if (event.Event == "ORDER_TRADE_UPDATE") {
+		} else if event.Event == "ORDER_TRADE_UPDATE" {
 			order := event.OrderTradeUpdate
 			var orderModel models.FuturesOrder
 			o.QueryTable("futures_orders").Filter("order_id", order.ID).One(&orderModel)
@@ -716,7 +731,7 @@ func WsUserData() {
 			orderModel.CommissionAsset = order.CommissionAsset
 			orderModel.Commission = order.Commission
 			orderModel.RealizedPnL = order.RealizedPnL
-			
+
 			orderModel.UpdateTime = event.Time
 			if orderModel.ID == 0 {
 				orderModel.CreateTime = event.Time
@@ -724,7 +739,7 @@ func WsUserData() {
 			} else {
 				o.Update(&orderModel)
 			}
-		} else if (event.Event == "ACCOUNT_CONFIG_UPDATE") {
+		} else if event.Event == "ACCOUNT_CONFIG_UPDATE" {
 			config := event.AccountConfigUpdate
 			if config.Leverage == 0 {
 				// 其它推送不处理
@@ -736,7 +751,7 @@ func WsUserData() {
 				positionModel.Leverage = config.Leverage
 				o.Update(&positionModel)
 			}
-		} else if (event.Event == "listenKeyExpired") {
+		} else if event.Event == "listenKeyExpired" {
 			// 如果 listenKey 过期，重新获取 listenKey
 			logs.Info("futures_user_data ws listenKeyExpired")
 			UpdateListenKey(listenKey)
@@ -750,9 +765,9 @@ func WsUserData() {
 		for {
 			time.Sleep(time.Minute * 20) // key 1小时过期， 20 分钟更新一次
 			UpdateListenKey(listenKey)
-		}	
+		}
 	}()
-	
+
 	if err != nil {
 		logs.Error("futures_user_data ws start error:", err)
 		time.Sleep(time.Second * 30) // 30 秒间隔

@@ -83,6 +83,66 @@
       </div>
     </div>
     <div class="kline-body" ref="fullscreenRoot">
+      <div class="kline-trades">
+        <div class="side-section trades">
+          <div class="side-title">
+            最新成交
+            <span class="status" :class="tradesStatus">{{ statusLabel(tradesStatus) }}</span>
+          </div>
+          <div class="trades-header">
+            <span>价格</span>
+            <span>数量</span>
+            <span>时间</span>
+          </div>
+          <div class="trades-list">
+            <div
+              v-for="(item, index) in trades"
+              :key="item.id || 'trade-' + index"
+              class="trade-row"
+              :class="[item.side, { flash: item.flash, big: item.big }]"
+            >
+              <span class="price">{{ formatNumber(item.price, pricePrecision) }}</span>
+              <span class="qty">{{ formatNumber(item.qty, qtyPrecision) }}</span>
+              <span class="time">{{ formatTradeTime(item.time) }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="kline-orderbook">
+        <div class="side-section">
+          <div class="side-title">
+            订单簿
+            <span class="status" :class="depthStatus">{{ statusLabel(depthStatus) }}</span>
+          </div>
+          <div class="orderbook">
+            <div class="orderbook-header">
+              <span>价格</span>
+              <span>数量</span>
+              <span>累计</span>
+            </div>
+            <div class="orderbook-list asks">
+              <div v-for="(item, index) in depthAsks" :key="'ask-' + index" class="orderbook-row sell">
+                <span class="depth-bg" :style="{ width: (item.depthPct || 0) + '%' }" />
+                <span class="price">{{ formatNumber(item.price, pricePrecision) }}</span>
+                <span class="qty">{{ formatNumber(item.qty, qtyPrecision) }}</span>
+                <span class="total">{{ formatNumber(item.total, qtyPrecision) }}</span>
+              </div>
+            </div>
+            <div class="orderbook-mid" :class="lastTradeSide">
+              <span class="label">最新</span>
+              <span class="price">{{ formatNumber(lastTradePrice, pricePrecision) }}</span>
+            </div>
+            <div class="orderbook-list bids">
+              <div v-for="(item, index) in depthBids" :key="'bid-' + index" class="orderbook-row buy">
+                <span class="depth-bg" :style="{ width: (item.depthPct || 0) + '%' }" />
+                <span class="price">{{ formatNumber(item.price, pricePrecision) }}</span>
+                <span class="qty">{{ formatNumber(item.qty, qtyPrecision) }}</span>
+                <span class="total">{{ formatNumber(item.total, qtyPrecision) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
       <div class="kline-tools">
         <div class="tool-group">
           <div class="tool-title">绘图</div>
@@ -140,7 +200,7 @@
 
 <script>
 import { init, dispose } from 'klinecharts'
-import { getFuturesKline } from '@/api/trade'
+import { getFuturesDepth, getFuturesKline, getFuturesTrades } from '@/api/trade'
 
 export default {
   name: 'FuturesKline',
@@ -152,6 +212,8 @@ export default {
       currentInterval: '1m',
       chart: null,
       ws: null,
+      wsDepth: null,
+      wsTrades: null,
       activeTool: '',
       timezone: 'Asia/Shanghai',
       settings: {
@@ -171,6 +233,28 @@ export default {
         volume: '--',
         maValues: [],
       },
+      depthBids: [],
+      depthAsks: [],
+      trades: [],
+      depthLimit: 20,
+      tradesLimit: 100,
+      depthMaxTotal: 1,
+      lastTradePrice: null,
+      lastTradeSide: '',
+      tradeFlashMs: 1000,
+      largeTradeNotional: 50000,
+      depthStatus: 'disconnected',
+      tradesStatus: 'disconnected',
+      depthReconnectDelay: 1000,
+      tradesReconnectDelay: 1000,
+      depthReconnectTimer: null,
+      tradesReconnectTimer: null,
+      depthPollTimer: null,
+      tradesPollTimer: null,
+      restPollInterval: 3000,
+      marketActive: true,
+      pricePrecision: 2,
+      qtyPrecision: 3,
       crosshairLabel: {
         visible: false,
         x: 0,
@@ -232,7 +316,12 @@ export default {
     this.initChart()
   },
   beforeDestroy() {
+    this.marketActive = false
     this.closeWs()
+    this.closeMarketWs()
+    this.clearReconnectTimers()
+    this.stopDepthPolling()
+    this.stopTradesPolling()
     if (this.chart) {
       dispose(this.$refs.chart)
       this.chart = null
@@ -263,6 +352,7 @@ export default {
       this.applyPeriod()
       this.initResizeObserver()
       this.$nextTick(() => this.initChartMouseEvents())
+      this.connectMarketWs()
     },
     initChartMouseEvents() {
       if (this.mouseEventsBound) return
@@ -614,10 +704,12 @@ export default {
     applySymbol() {
       const pricePrecision = this.getPrecision(this.tickSize)
       const volumePrecision = this.getPrecision(this.stepSize)
+      this.pricePrecision = pricePrecision || 2
+      this.qtyPrecision = volumePrecision || 0
       this.chart.setSymbol({
         ticker: this.symbol,
-        pricePrecision: pricePrecision || 2,
-        volumePrecision: volumePrecision || 0,
+        pricePrecision: this.pricePrecision,
+        volumePrecision: this.qtyPrecision,
       })
     },
     applyPeriod() {
@@ -709,6 +801,265 @@ export default {
         }
       }
     },
+    connectMarketWs() {
+      if (!this.symbol) return
+      this.marketActive = true
+      this.connectDepthWs(this.symbol, this.depthLimit)
+      this.connectTradesWs(this.symbol, this.tradesLimit)
+    },
+    statusLabel(status) {
+      switch (status) {
+        case 'connected':
+          return 'WS已连接'
+        case 'connecting':
+          return '连接中'
+        case 'reconnecting':
+          return '重连中'
+        case 'polling':
+          return 'REST轮询'
+        default:
+          return '已断开'
+      }
+    },
+    clearReconnectTimers() {
+      if (this.depthReconnectTimer) {
+        clearTimeout(this.depthReconnectTimer)
+        this.depthReconnectTimer = null
+      }
+      if (this.tradesReconnectTimer) {
+        clearTimeout(this.tradesReconnectTimer)
+        this.tradesReconnectTimer = null
+      }
+    },
+    startDepthPolling() {
+      if (this.depthPollTimer) return
+      this.depthStatus = this.depthStatus === 'connected' ? 'connected' : 'polling'
+      this.fetchDepthSnapshot()
+      this.depthPollTimer = setInterval(() => {
+        this.fetchDepthSnapshot()
+      }, this.restPollInterval)
+    },
+    scheduleDepthReconnect() {
+      if (this.depthReconnectTimer || !this.marketActive) return
+      const delay = this.depthReconnectDelay
+      this.depthReconnectTimer = setTimeout(() => {
+        this.depthReconnectTimer = null
+        this.depthReconnectDelay = Math.min(delay * 2, 10000)
+        if (this.marketActive && this.depthStatus !== 'connected') {
+          this.connectDepthWs(this.symbol, this.depthLimit)
+        }
+      }, delay)
+    },
+    stopDepthPolling() {
+      if (this.depthPollTimer) {
+        clearInterval(this.depthPollTimer)
+        this.depthPollTimer = null
+      }
+    },
+    startTradesPolling() {
+      if (this.tradesPollTimer) return
+      this.tradesStatus = this.tradesStatus === 'connected' ? 'connected' : 'polling'
+      this.fetchTradesSnapshot()
+      this.tradesPollTimer = setInterval(() => {
+        this.fetchTradesSnapshot()
+      }, this.restPollInterval)
+    },
+    scheduleTradesReconnect() {
+      if (this.tradesReconnectTimer || !this.marketActive) return
+      const delay = this.tradesReconnectDelay
+      this.tradesReconnectTimer = setTimeout(() => {
+        this.tradesReconnectTimer = null
+        this.tradesReconnectDelay = Math.min(delay * 2, 10000)
+        if (this.marketActive && this.tradesStatus !== 'connected') {
+          this.connectTradesWs(this.symbol, this.tradesLimit)
+        }
+      }, delay)
+    },
+    stopTradesPolling() {
+      if (this.tradesPollTimer) {
+        clearInterval(this.tradesPollTimer)
+        this.tradesPollTimer = null
+      }
+    },
+    async fetchDepthSnapshot() {
+      if (!this.symbol) return
+      try {
+        const resp = await getFuturesDepth({ symbol: this.symbol, limit: this.depthLimit })
+        const data = resp?.data || {}
+        const bids = Array.isArray(data.bids) ? data.bids : []
+        const asks = Array.isArray(data.asks) ? data.asks : []
+        this.applyDepthSnapshot(bids, asks)
+      } catch (e) {
+        // ignore
+      }
+    },
+    async fetchTradesSnapshot() {
+      if (!this.symbol) return
+      try {
+        const resp = await getFuturesTrades({ symbol: this.symbol, limit: this.tradesLimit })
+        const items = Array.isArray(resp?.data?.items) ? resp.data.items : []
+        this.applyTradesSnapshot(items)
+      } catch (e) {
+        // ignore
+      }
+    },
+    applyDepthSnapshot(bids, asks) {
+      const buildDepth = list => {
+        let total = 0
+        return list.map(item => {
+          const qty = Number(item.qty ?? item.Quantity ?? item[1])
+          const price = Number(item.price ?? item.Price ?? item[0])
+          total += qty
+          return {
+            price,
+            qty,
+            total,
+          }
+        })
+      }
+      const nextBids = buildDepth(bids)
+      const nextAsks = buildDepth(asks)
+      const maxTotal = Math.max(
+        nextBids.length ? nextBids[nextBids.length - 1].total : 0,
+        nextAsks.length ? nextAsks[nextAsks.length - 1].total : 0,
+        1
+      )
+      const applyDepthPct = item => ({
+        ...item,
+        depthPct: Math.min((item.total / maxTotal) * 100, 100),
+      })
+      this.depthMaxTotal = maxTotal
+      this.depthBids = nextBids.map(applyDepthPct)
+      this.depthAsks = nextAsks.map(applyDepthPct)
+    },
+    applyTradesSnapshot(items) {
+      const normalized = items
+        .map(item => ({ ...this.buildTradeItem(item), flash: false }))
+        .sort((a, b) => b.time - a.time)
+      this.trades = normalized.slice(0, this.tradesLimit)
+      if (this.trades.length) {
+        this.lastTradePrice = this.trades[0].price
+        this.lastTradeSide = this.trades[0].side
+      }
+    },
+    connectDepthWs(symbol, limit) {
+      this.closeDepthWs()
+      if (!this.marketActive) return
+      const url = this.buildWsUrl(`/ws/futures/depth?symbol=${symbol}&limit=${limit}`)
+      this.depthStatus = 'connecting'
+      const ws = new WebSocket(url)
+      this.wsDepth = ws
+      ws.onopen = () => {
+        this.depthStatus = 'connected'
+        this.depthReconnectDelay = 1000
+        this.stopDepthPolling()
+      }
+      ws.onerror = () => {
+        if (!this.marketActive) return
+        if (!this.depthPollTimer) {
+          this.depthStatus = 'reconnecting'
+        }
+        this.startDepthPolling()
+        this.scheduleDepthReconnect()
+      }
+      ws.onclose = () => {
+        if (!this.marketActive) return
+        if (!this.depthPollTimer) {
+          this.depthStatus = 'reconnecting'
+        }
+        this.startDepthPolling()
+        this.scheduleDepthReconnect()
+      }
+      ws.onmessage = event => {
+        try {
+          const payload = JSON.parse(event.data || '{}')
+          if (!payload?.data) return
+          const bids = Array.isArray(payload.data.bids) ? payload.data.bids : []
+          const asks = Array.isArray(payload.data.asks) ? payload.data.asks : []
+          this.applyDepthSnapshot(bids, asks)
+        } catch (e) {
+          // ignore invalid message
+        }
+      }
+    },
+    connectTradesWs(symbol, limit) {
+      this.closeTradesWs()
+      const url = this.buildWsUrl(`/ws/futures/trades?symbol=${symbol}&limit=${limit}`)
+      if (!this.marketActive) return
+      this.tradesStatus = 'connecting'
+      const ws = new WebSocket(url)
+      this.wsTrades = ws
+      ws.onopen = () => {
+        this.tradesStatus = 'connected'
+        this.tradesReconnectDelay = 1000
+        this.stopTradesPolling()
+      }
+      ws.onerror = () => {
+        if (!this.marketActive) return
+        if (!this.tradesPollTimer) {
+          this.tradesStatus = 'reconnecting'
+        }
+        this.startTradesPolling()
+        this.scheduleTradesReconnect()
+      }
+      ws.onclose = () => {
+        if (!this.marketActive) return
+        if (!this.tradesPollTimer) {
+          this.tradesStatus = 'reconnecting'
+        }
+        this.startTradesPolling()
+        this.scheduleTradesReconnect()
+      }
+      ws.onmessage = event => {
+        try {
+          const payload = JSON.parse(event.data || '{}')
+          if (payload?.type === 'snapshot' && Array.isArray(payload.data)) {
+            this.applyTradesSnapshot(payload.data)
+            return
+          }
+          if (payload?.type === 'update' && payload?.data) {
+            const next = this.buildTradeItem(payload.data)
+            this.trades.unshift(next)
+            if (this.trades.length > this.tradesLimit) {
+              this.trades = this.trades.slice(0, this.tradesLimit)
+            }
+            this.lastTradePrice = next.price
+            this.lastTradeSide = next.side
+            if (next.flash) {
+              const id = next.id
+              setTimeout(() => {
+                const target = this.trades.find(item => item.id === id)
+                if (target) target.flash = false
+              }, this.tradeFlashMs)
+            }
+          }
+        } catch (e) {
+          // ignore invalid message
+        }
+      }
+    },
+    closeDepthWs() {
+      if (this.wsDepth) {
+        this.wsDepth.onclose = null
+        this.wsDepth.onerror = null
+        this.wsDepth.close()
+        this.wsDepth = null
+      }
+    },
+    closeTradesWs() {
+      if (this.wsTrades) {
+        this.wsTrades.onclose = null
+        this.wsTrades.onerror = null
+        this.wsTrades.close()
+        this.wsTrades = null
+      }
+    },
+    closeMarketWs() {
+      this.closeDepthWs()
+      this.closeTradesWs()
+      this.depthStatus = 'disconnected'
+      this.tradesStatus = 'disconnected'
+    },
     closeWs() {
       if (this.ws) {
         this.ws.close()
@@ -739,6 +1090,29 @@ export default {
       if (value === undefined || value === null || Number.isNaN(Number(value))) return '--'
       const num = Number(value)
       return num.toFixed(Math.min(Math.max(precision, 0), 8))
+    },
+    formatTradeTime(ts) {
+      if (!ts) return '--'
+      const date = new Date(Number(ts))
+      const pad = val => String(val).padStart(2, '0')
+      return `${pad(date.getHours())}:${pad(date.getMinutes())}`
+    },
+    buildTradeItem(raw) {
+      const price = Number(raw.price)
+      const qty = Number(raw.qty)
+      const time = Number(raw.time)
+      const side = raw.maker ? 'sell' : 'buy'
+      const notional = price * qty
+      return {
+        id: `${time}-${price}-${qty}-${side}`,
+        price,
+        qty,
+        time,
+        side,
+        notional,
+        big: notional >= this.largeTradeNotional,
+        flash: true,
+      }
     },
     intervalToPeriod(interval) {
       const num = parseInt(interval, 10)
@@ -932,12 +1306,258 @@ export default {
   overflow: hidden;
 }
 
+.kline-trades,
+.kline-orderbook {
+  width: 300px;
+  background: #0c1017;
+  border-right: 1px solid #1b2230;
+  display: flex;
+  flex-direction: column;
+  padding: 10px 10px 12px;
+  overflow: hidden;
+}
+
+.kline-trades {
+  width: 320px;
+}
+
 .kline-tools {
   width: 56px;
   background: #0d1117;
   border-right: 1px solid #1b2230;
   padding: 10px 8px;
   overflow-y: auto;
+}
+
+.side-section {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: #0f1115;
+  border: 1px solid #1b2230;
+  border-radius: 12px;
+  padding: 10px;
+}
+
+.side-section.trades {
+  flex: 1;
+}
+
+.side-title {
+  font-size: 12px;
+  color: #9fb0c6;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.status {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: #1b2230;
+  color: #9fb0c6;
+}
+
+.status.connected {
+  color: #4ade80;
+  background: rgba(74, 222, 128, 0.12);
+}
+
+.status.reconnecting,
+.status.connecting,
+.status.polling {
+  color: #fbbf24;
+  background: rgba(251, 191, 36, 0.12);
+}
+
+.status.disconnected {
+  color: #f87171;
+  background: rgba(248, 113, 113, 0.12);
+}
+
+.orderbook {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.orderbook-header {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr 1fr;
+  column-gap: 8px;
+  font-size: 10px;
+  color: #6d7a8d;
+}
+
+.orderbook-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 220px;
+  overflow: auto;
+}
+
+.orderbook-row {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr 1fr;
+  column-gap: 8px;
+  font-size: 11px;
+  position: relative;
+  padding: 2px 6px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: rgba(15, 20, 30, 0.35);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  align-items: center;
+}
+
+.orderbook-row .depth-bg {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  background: rgba(248, 113, 113, 0.15);
+  z-index: 0;
+}
+
+.orderbook-row.buy .depth-bg {
+  left: 0;
+  right: auto;
+  background: rgba(74, 222, 128, 0.15);
+}
+
+.orderbook-row span {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.orderbook-row.sell .price {
+  color: #f87171;
+}
+
+.orderbook-row.buy .price {
+  color: #4ade80;
+}
+
+.orderbook-row .price {
+  text-align: left;
+}
+
+.orderbook-row .qty,
+.orderbook-row .total {
+  text-align: right;
+}
+
+.orderbook-row .qty {
+  color: #cbd5e1;
+}
+
+.orderbook-row .total {
+  color: #9fb0c6;
+}
+
+.orderbook-mid {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 8px;
+  border-radius: 8px;
+  background: #0d141f;
+  border: 1px solid #1b2230;
+  font-size: 12px;
+  margin: 4px 0;
+}
+
+.orderbook-mid .label {
+  color: #8fa1b8;
+}
+
+.orderbook-mid.buy .price {
+  color: #4ade80;
+}
+
+.orderbook-mid.sell .price {
+  color: #f87171;
+}
+
+.trades-header {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr 1fr;
+  column-gap: 8px;
+  font-size: 10px;
+  color: #6d7a8d;
+  margin-bottom: 6px;
+}
+
+.trades-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow: auto;
+  min-height: 0;
+}
+
+.trade-row {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr 1fr;
+  column-gap: 8px;
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  align-items: center;
+}
+
+.trade-row span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.trade-row .price {
+  text-align: left;
+}
+
+.trade-row .qty,
+.trade-row .time {
+  text-align: right;
+}
+
+.trade-row.buy .price {
+  color: #4ade80;
+}
+
+.trade-row.sell .price {
+  color: #f87171;
+}
+
+.trade-row .qty,
+.trade-row .time {
+  color: #cbd5e1;
+}
+
+.trade-row.flash {
+  animation: trade-flash 1s ease-out;
+}
+
+.trade-row.big {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+@keyframes trade-flash {
+  0% {
+    background: rgba(59, 130, 246, 0.25);
+  }
+  100% {
+    background: transparent;
+  }
 }
 
 .tool-group {
@@ -987,6 +1607,7 @@ export default {
   background: #0f1115;
   padding: 0;
   position: relative;
+  min-width: 0;
 }
 
 .kline-chart {
