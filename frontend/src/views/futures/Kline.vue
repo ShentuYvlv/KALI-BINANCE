@@ -269,6 +269,7 @@ export default {
       const chartEl = this.$refs.chart
       if (!chartEl) return
       this.mouseEventsBound = true
+      const yAxisDom = this.chart?.getDom?.('candle_pane', 'yAxis') || null
       const onLeave = () => {
         this.crosshairLabel.visible = false
         if (this.chart?.getChartStore) {
@@ -305,9 +306,50 @@ export default {
       }
       chartEl.addEventListener('mouseleave', onLeave)
       window.addEventListener('mousemove', onMove)
+      const onYAxisWheel = event => {
+        if (!this.chart) return
+        event.preventDefault()
+        const pane = this.chart.getDrawPaneById?.('candle_pane')
+        const yAxis = pane?.getAxisComponent?.()
+        if (!yAxis) return
+        const range = yAxis.getRange()
+        const delta = Math.sign(event.deltaY || 0) * Math.min(1, Math.abs((event.deltaY || 0) / 100))
+        if (!delta) return
+        const scale = 1 + delta * 0.1
+        const newRange = range.range * scale
+        const difRange = (newRange - range.range) / 2
+        const newFrom = range.from - difRange
+        const newTo = range.to + difRange
+        const newRealFrom = yAxis.valueToRealValue(newFrom, { range })
+        const newRealTo = yAxis.valueToRealValue(newTo, { range })
+        const newDisplayFrom = yAxis.realValueToDisplayValue(newRealFrom, { range })
+        const newDisplayTo = yAxis.realValueToDisplayValue(newRealTo, { range })
+        yAxis.setRange({
+          from: newFrom,
+          to: newTo,
+          range: newRange,
+          realFrom: newRealFrom,
+          realTo: newRealTo,
+          realRange: newRealTo - newRealFrom,
+          displayFrom: newDisplayFrom,
+          displayTo: newDisplayTo,
+          displayRange: newDisplayTo - newDisplayFrom,
+        })
+        this.chart.layout({
+          measureWidth: true,
+          update: true,
+          buildYAxisTick: true,
+        })
+      }
+      if (yAxisDom) {
+        yAxisDom.addEventListener('wheel', onYAxisWheel, { passive: false })
+      }
       this.$once('hook:beforeDestroy', () => {
         chartEl.removeEventListener('mouseleave', onLeave)
         window.removeEventListener('mousemove', onMove)
+        if (yAxisDom) {
+          yAxisDom.removeEventListener('wheel', onYAxisWheel)
+        }
         if (rafId) {
           window.cancelAnimationFrame(rafId)
           rafId = null
@@ -357,6 +399,14 @@ export default {
               downColor: '#f05454',
             },
           },
+          tooltip: {
+            showRule: 'none',
+          },
+        },
+        indicator: {
+          tooltip: {
+            showRule: 'none',
+          },
         },
         xAxis: {
           axisLine: { color: '#1f2937' },
@@ -402,10 +452,12 @@ export default {
           const interval = this.periodToInterval(period)
           const limit = type === 'init' ? 500 : 300
           let endTime = 0
-          if (type === 'backward' && timestamp) {
+          if (type === 'forward' && timestamp) {
+            // 向左加载更早的数据
             endTime = timestamp - 1
           }
-          if (type === 'forward') {
+          if (type === 'backward') {
+            // 右侧不再加载，避免旧数据追加到末尾造成时间倒序
             callback([], { forward: false, backward: false })
             return
           }
@@ -417,7 +469,7 @@ export default {
           })
           const data = Array.isArray(resp?.data) ? resp.data : []
           const hasMore = data.length >= limit
-          callback(data, { backward: hasMore, forward: false })
+          callback(data, { forward: hasMore, backward: false })
           if (type === 'init') {
             this.$nextTick(() => this.updateInfoFromLast())
           }

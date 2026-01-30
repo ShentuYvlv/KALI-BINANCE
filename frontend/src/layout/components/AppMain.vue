@@ -1,5 +1,5 @@
 <template>
-  <section class="app-main">
+  <section class="app-main" :class="{ 'no-header': isKlinePage }">
     <transition name="fade-transform" mode="out-in">
       <keep-alive :include="cachedViews">
         <router-view :key="key" />
@@ -17,6 +17,9 @@ export default {
     },
     key() {
       return this.$route.path
+    },
+    isKlinePage() {
+      return this.$route.path === '/futures/symbols/kline'
     }
   }
 }
@@ -29,6 +32,11 @@ export default {
   width: 100%;
   position: relative;
   overflow: hidden;
+}
+
+.app-main.no-header {
+  min-height: 100vh;
+  padding-top: 0;
 }
 
 .fixed-header+.app-main {

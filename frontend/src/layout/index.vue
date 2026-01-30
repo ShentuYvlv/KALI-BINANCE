@@ -1,9 +1,9 @@
 <template>
   <div :class="classObj" class="app-wrapper">
     <div v-if="device==='mobile'&&sidebar.opened" class="drawer-bg" @click="handleClickOutside" />
-    <sidebar class="sidebar-container" />
-    <div :class="{hasTagsView:needTagsView}" class="main-container">
-      <div :class="{'fixed-header':fixedHeader}">
+    <sidebar v-if="!isKlinePage" class="sidebar-container" />
+    <div :class="{hasTagsView:needTagsView && !isKlinePage}" class="main-container">
+      <div v-if="!isKlinePage" :class="{'fixed-header':fixedHeader}">
         <navbar />
         <tags-view v-if="needTagsView" />
       </div>
@@ -47,6 +47,9 @@ export default {
         withoutAnimation: this.sidebar.withoutAnimation,
         mobile: this.device === 'mobile'
       }
+    },
+    isKlinePage() {
+      return this.$route.path === '/futures/symbols/kline'
     }
   },
   methods: {

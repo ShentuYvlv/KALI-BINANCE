@@ -26,3 +26,8 @@
 - API：`frontend/src/api/trade.js`
 - 路由与文案：`frontend/src/router/modules/trade.js`，`frontend/src/lang/zh.js`，`frontend/src/lang/en.js`
 - 依赖：`frontend/package.json`（新增 `klinecharts`）
+
+## 2026-01-30
+- K 线页数据加载方向修正：历史数据仅在 forward（向左拖动）加载，避免旧数据追加到末尾导致时间回跳。
+- K 线页面全屏化：隐藏全局左侧菜单与顶部导航/标签栏，内容区高度调整为 100vh。
+- K 线页交互优化：右侧价格轴支持滚轮缩放；内置 KLineChart tooltip 关闭，避免与自定义信息栏重复。
