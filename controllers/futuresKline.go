@@ -93,6 +93,8 @@ func (ctrl *FuturesKlineController) Ws() {
 	var writeMu sync.Mutex
 	var closed int32
 	var stopOnce sync.Once
+	var stopC chan struct{}
+	var doneC chan struct{}
 
 	closeStop := func(stopC chan struct{}) {
 		stopOnce.Do(func() {
@@ -100,7 +102,7 @@ func (ctrl *FuturesKlineController) Ws() {
 		})
 	}
 
-	doneC, stopC, err := futures.WsKlineServe(symbol, interval, func(event *futures.WsKlineEvent) {
+	doneC, stopC, err = futures.WsKlineServe(symbol, interval, func(event *futures.WsKlineEvent) {
 		k := event.Kline
 		open, _ := strconv.ParseFloat(k.Open, 64)
 		high, _ := strconv.ParseFloat(k.High, 64)

@@ -125,6 +125,13 @@
             </span>
           </div>
         </div>
+        <div
+          v-show="crosshairLabel.visible"
+          class="crosshair-time"
+          :style="{ left: crosshairLabel.x + 'px' }"
+        >
+          {{ crosshairLabel.text }}
+        </div>
         <div ref="chart" class="kline-chart" />
       </div>
     </div>
@@ -164,6 +171,13 @@ export default {
         volume: '--',
         maValues: [],
       },
+      crosshairLabel: {
+        visible: false,
+        x: 0,
+        text: '',
+      },
+      mouseEventsBound: false,
+      lastCrosshairIndex: null,
       isFullscreen: false,
       intervalOptions: [
         { label: '1m', value: '1m' },
@@ -237,8 +251,9 @@ export default {
         locale: 'zh-CN',
         timezone: this.timezone,
         styles: 'dark',
-        zoomAnchor: 'last_bar',
+        zoomAnchor: 'cursor_point',
       })
+      this.applyFormatters()
       this.applyTheme()
       this.applySettings()
       this.setupDefaultIndicators()
@@ -247,6 +262,69 @@ export default {
       this.applySymbol()
       this.applyPeriod()
       this.initResizeObserver()
+      this.$nextTick(() => this.initChartMouseEvents())
+    },
+    initChartMouseEvents() {
+      if (this.mouseEventsBound) return
+      const chartEl = this.$refs.chart
+      if (!chartEl) return
+      this.mouseEventsBound = true
+      const onLeave = () => {
+        this.crosshairLabel.visible = false
+        if (this.chart?.getChartStore) {
+          this.chart.getChartStore().setCrosshair()
+        }
+      }
+      let rafId = null
+      let lastPoint = null
+      const onMove = event => {
+        lastPoint = { x: event.clientX, y: event.clientY }
+        if (rafId) return
+        rafId = window.requestAnimationFrame(() => {
+          rafId = null
+          if (!lastPoint || !this.chart) return
+          const rect = chartEl.getBoundingClientRect()
+          const x = lastPoint.x - rect.left
+          const y = lastPoint.y - rect.top
+          if (x < 0 || y < 0 || x > rect.width || y > rect.height) {
+            this.crosshairLabel.visible = false
+            this.chart.getChartStore().setCrosshair()
+            return
+          }
+          let paneId = 'candle_pane'
+          const panes = this.chart.getDrawPanes?.() || []
+          for (const pane of panes) {
+            const bound = pane.getBounding?.()
+            if (bound && y >= bound.top && y <= bound.bottom) {
+              paneId = pane.getId()
+              break
+            }
+          }
+          this.chart.getChartStore().setCrosshair({ x, y, paneId }, { forceInvalidate: true })
+        })
+      }
+      chartEl.addEventListener('mouseleave', onLeave)
+      window.addEventListener('mousemove', onMove)
+      this.$once('hook:beforeDestroy', () => {
+        chartEl.removeEventListener('mouseleave', onLeave)
+        window.removeEventListener('mousemove', onMove)
+        if (rafId) {
+          window.cancelAnimationFrame(rafId)
+          rafId = null
+        }
+        this.mouseEventsBound = false
+      })
+    },
+    applyFormatters() {
+      if (!this.chart) return
+      this.chart.setFormatter({
+        formatDate: ({ timestamp, type, dateTimeFormat }) => {
+          if (type === 'crosshair') {
+            return this.formatCrosshairTime(timestamp)
+          }
+          return dateTimeFormat.format(new Date(timestamp))
+        },
+      })
     },
     initResizeObserver() {
       const resize = () => {
@@ -293,6 +371,29 @@ export default {
         separator: {
           color: '#1f2937',
         },
+        crosshair: {
+          show: true,
+          horizontal: {
+            show: true,
+            line: { show: true, color: '#4b5563' },
+            text: {
+              show: true,
+              color: '#e2e8f0',
+              backgroundColor: '#111827',
+              borderColor: '#111827',
+            },
+          },
+          vertical: {
+            show: true,
+            line: { show: true, color: '#4b5563' },
+            text: {
+              show: true,
+              color: '#e2e8f0',
+              backgroundColor: '#111827',
+              borderColor: '#111827',
+            },
+          },
+        },
       })
     },
     setupDataLoader() {
@@ -331,11 +432,19 @@ export default {
       })
     },
     subscribeCrosshair() {
-      this.chart.subscribeAction('onCrosshairChange', data => {
-        const payload = data || {}
-        if (payload.kLineData) {
-          this.updateInfo(payload.kLineData, payload.dataIndex)
+      this.chart.subscribeAction('onCrosshairChange', () => {
+        const crosshair = this.chart.getChartStore().getCrosshair()
+        if (crosshair?.kLineData) {
+          const idx = crosshair.realDataIndex ?? crosshair.dataIndex
+          if (idx !== this.lastCrosshairIndex) {
+            this.lastCrosshairIndex = idx
+            this.updateInfo(crosshair.kLineData, idx)
+          }
+          this.updateCrosshairLabel(crosshair)
+          return
         }
+        this.crosshairLabel.visible = false
+        this.lastCrosshairIndex = null
       })
     },
     setupDefaultIndicators() {
@@ -377,6 +486,23 @@ export default {
         close: this.formatNumber(kLineData.close, pricePrecision),
         volume: this.formatNumber(kLineData.volume, volumePrecision),
         maValues: this.getMaValues(dataIndex, pricePrecision),
+      }
+    },
+    updateCrosshairLabel(crosshair) {
+      const chartEl = this.$refs.chart
+      if (!chartEl) return
+      const width = chartEl.clientWidth || 0
+      const x = crosshair.realX ?? crosshair.x
+      if (x === undefined || x === null || !crosshair.timestamp) {
+        this.crosshairLabel.visible = false
+        return
+      }
+      const clamp = (val, min, max) => Math.max(min, Math.min(max, val))
+      const safeX = clamp(x, 40, Math.max(40, width - 40))
+      this.crosshairLabel = {
+        visible: true,
+        x: safeX,
+        text: this.formatCrosshairTime(crosshair.timestamp),
       }
     },
     getMaValues(dataIndex, precision) {
@@ -550,6 +676,12 @@ export default {
       const date = new Date(ts)
       const pad = val => String(val).padStart(2, '0')
       return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`
+    },
+    formatCrosshairTime(ts) {
+      if (!ts) return '--'
+      const date = new Date(ts)
+      const pad = val => String(val).padStart(2, '0')
+      return `${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`
     },
     formatNumber(value, precision = 2) {
       if (value === undefined || value === null || Number.isNaN(Number(value))) return '--'
@@ -808,6 +940,20 @@ export default {
 .kline-chart {
   width: 100%;
   height: 100%;
+}
+
+.crosshair-time {
+  position: absolute;
+  bottom: 8px;
+  transform: translateX(-50%);
+  background: #1f2937;
+  color: #e2e8f0;
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid #1f2937;
+  z-index: 3;
+  pointer-events: none;
 }
 
 .kline-info-bar {
