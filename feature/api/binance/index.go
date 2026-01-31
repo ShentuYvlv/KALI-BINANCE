@@ -21,6 +21,13 @@ var proxy_url, _ = config.String("binance::proxy_url")
 var futuresClient *futures.Client
 var deliveryClient *delivery.Client
 
+const (
+	weightDefault      = 1
+	weightAccount      = 5
+	weightOpenOrders   = 40
+	weightTicker24hAll = 40
+)
+
 func init() {
 	if proxy_url == "" {
 		futuresClient = futures.NewClient(api_key, api_secret)
@@ -45,7 +52,10 @@ type ListOrderParams struct {
 
 // @returns /doc/futuresAccount.js
 func GetFuturesAccount() (res *futures.Account, err error) {
-	res, err = futuresClient.NewGetAccountService().Do(context.Background())
+	err = withLimiter(weightAccount, func() error {
+		res, err = futuresClient.NewGetAccountService().Do(context.Background())
+		return err
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -70,7 +80,10 @@ func GetPosition(positionParams PositionParams) (res []*futures.PositionRisk, er
 	if positionParams.Symbol != "" {
 		query = query.Symbol(positionParams.Symbol)
 	}
-	res, err = query.Do(context.Background())
+	err = withLimiter(weightDefault, func() error {
+		res, err = query.Do(context.Background())
+		return err
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -85,7 +98,10 @@ func GetPositionV3(positionParams PositionParams) (res []*futures.PositionRiskV3
 	if positionParams.Symbol != "" {
 		query = query.Symbol(positionParams.Symbol)
 	}
-	res, err = query.Do(context.Background())
+	err = withLimiter(weightDefault, func() error {
+		res, err = query.Do(context.Background())
+		return err
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -119,7 +135,10 @@ func GetIncome(incomeParams IncomeParams) (res []*futures.IncomeHistory, err err
 	if incomeParams.Limit != 0 {
 		query = query.Limit(incomeParams.Limit)
 	}
-	res, err = query.Do(context.Background())
+	err = withLimiter(weightDefault, func() error {
+		res, err = query.Do(context.Background())
+		return err
+	})
 	if err != nil {
 		logs.Error(err)
 		return nil, err
@@ -133,7 +152,10 @@ func GetDepth(symbol string, limits ...int) (res *futures.DepthResponse, err err
 	if len(limits) != 0 {
 		limit = limits[0]
 	}
-	res, err = futuresClient.NewDepthService().Symbol(symbol).Limit(limit).Do(context.Background())
+	err = withLimiter(weightDefault, func() error {
+		res, err = futuresClient.NewDepthService().Symbol(symbol).Limit(limit).Do(context.Background())
+		return err
+	})
 	if err != nil {
 		logs.Error(err)
 		return nil, err
@@ -143,7 +165,10 @@ func GetDepth(symbol string, limits ...int) (res *futures.DepthResponse, err err
 
 // 获取交易价格
 func GetTickerPrice(symbol string) (res []*futures.SymbolPrice, err error) {
-	res, err = futuresClient.NewListPricesService().Symbol(symbol).Do(context.Background())
+	err = withLimiter(weightDefault, func() error {
+		res, err = futuresClient.NewListPricesService().Symbol(symbol).Do(context.Background())
+		return err
+	})
 	if err != nil {
 		logs.Error(err)
 		return nil, err
@@ -158,7 +183,10 @@ func Get24hPriceChangeStats(symbol string) (res []*futures.PriceChangeStats, err
 	if symbol != "" {
 		service = service.Symbol(symbol)
 	}
-	res, err = service.Do(context.Background())
+	err = withLimiter(weightTicker24hAll, func() error {
+		res, err = service.Do(context.Background())
+		return err
+	})
 	if err != nil {
 		logs.Error(err)
 		return nil, err
@@ -169,7 +197,10 @@ func Get24hPriceChangeStats(symbol string) (res []*futures.PriceChangeStats, err
 // 获取合约开仓量
 // @see https://developers.binance.com/docs/zh-CN/derivatives/usds-margined-futures/market-data/Open-Interest
 func GetOpenInterest(symbol string) (res *futures.OpenInterest, err error) {
-	res, err = futuresClient.NewGetOpenInterestService().Symbol(symbol).Do(context.Background())
+	err = withLimiter(weightDefault, func() error {
+		res, err = futuresClient.NewGetOpenInterestService().Symbol(symbol).Do(context.Background())
+		return err
+	})
 	if err != nil {
 		logs.Error(err)
 		return nil, err
@@ -184,7 +215,11 @@ func GetDepthAvgPrice(symbol string, limits ...int) (buyPrice float64, sellPrice
 	if len(limits) != 0 {
 		limit = limits[0]
 	}
-	res, err := futuresClient.NewDepthService().Symbol(symbol).Limit(limit).Do(context.Background())
+	var res *futures.DepthResponse
+	err = withLimiter(weightDefault, func() error {
+		res, err = futuresClient.NewDepthService().Symbol(symbol).Limit(limit).Do(context.Background())
+		return err
+	})
 	if err != nil {
 		logs.Error(err)
 		return 0.0, 0.0, err
@@ -202,7 +237,10 @@ func GetRecentTrades(symbol string, limit int) (res []*futures.Trade, err error)
 	if limit > 0 {
 		query = query.Limit(limit)
 	}
-	res, err = query.Do(context.Background())
+	err = withLimiter(weightDefault, func() error {
+		res, err = query.Do(context.Background())
+		return err
+	})
 	if err != nil {
 		logs.Error(err)
 		return nil, err
@@ -236,7 +274,10 @@ func avgPrice(data *futures.DepthResponse) (buyPrice float64, sellPrice float64)
 // @param limit 返回的K线数据条数
 // @returns /doc/kine.js
 func GetKlineData(symbol string, interval string, limit int) (klines []*futures.Kline, err error) {
-	klines, err = futuresClient.NewKlinesService().Symbol(symbol).Interval(interval).Limit(limit).Do(context.Background())
+	err = withLimiter(weightDefault, func() error {
+		klines, err = futuresClient.NewKlinesService().Symbol(symbol).Interval(interval).Limit(limit).Do(context.Background())
+		return err
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -260,7 +301,10 @@ func GetKlineDataRange(symbol string, interval string, limit int, startTime int6
 	if endTime > 0 {
 		service = service.EndTime(endTime)
 	}
-	klines, err = service.Do(context.Background())
+	err = withLimiter(weightDefault, func() error {
+		klines, err = service.Do(context.Background())
+		return err
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -274,15 +318,18 @@ func GetKlineDataRange(symbol string, interval string, limit int, startTime int6
 // @see https://binance-docs.github.io/apidocs/futures/cn/#trade-3
 // @returns /doc/order.js
 func BuyLimit(symbol string, quantity float64, price float64, positionSide futures.PositionSideType) (order *futures.CreateOrderResponse, err error) {
-	order, err = futuresClient.NewCreateOrderService().
-		Symbol(symbol).
-		Side(futures.SideTypeBuy).
-		PositionSide(positionSide).
-		Type(futures.OrderTypeLimit).
-		TimeInForce(futures.TimeInForceTypeGTC).
-		Quantity(strconv.FormatFloat(quantity, 'f', -1, 64)).
-		Price(strconv.FormatFloat(price, 'f', -1, 64)).
-		Do(context.Background())
+	err = withLimiter(weightDefault, func() error {
+		order, err = futuresClient.NewCreateOrderService().
+			Symbol(symbol).
+			Side(futures.SideTypeBuy).
+			PositionSide(positionSide).
+			Type(futures.OrderTypeLimit).
+			TimeInForce(futures.TimeInForceTypeGTC).
+			Quantity(strconv.FormatFloat(quantity, 'f', -1, 64)).
+			Price(strconv.FormatFloat(price, 'f', -1, 64)).
+			Do(context.Background())
+		return err
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -294,15 +341,18 @@ func BuyLimit(symbol string, quantity float64, price float64, positionSide futur
 // @see https://binance-docs.github.io/apidocs/futures/cn/#trade-3
 // @returns /doc/order.js
 func SellLimit(symbol string, quantity float64, price float64, positionSide futures.PositionSideType) (order *futures.CreateOrderResponse, err error) {
-	order, err = futuresClient.NewCreateOrderService().
-		Symbol(symbol).
-		Side(futures.SideTypeSell).
-		PositionSide(positionSide).
-		Type(futures.OrderTypeLimit).
-		TimeInForce(futures.TimeInForceTypeGTC).
-		Quantity(strconv.FormatFloat(quantity, 'f', -1, 64)).
-		Price(strconv.FormatFloat(price, 'f', -1, 64)).
-		Do(context.Background())
+	err = withLimiter(weightDefault, func() error {
+		order, err = futuresClient.NewCreateOrderService().
+			Symbol(symbol).
+			Side(futures.SideTypeSell).
+			PositionSide(positionSide).
+			Type(futures.OrderTypeLimit).
+			TimeInForce(futures.TimeInForceTypeGTC).
+			Quantity(strconv.FormatFloat(quantity, 'f', -1, 64)).
+			Price(strconv.FormatFloat(price, 'f', -1, 64)).
+			Do(context.Background())
+		return err
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -314,14 +364,17 @@ func SellLimit(symbol string, quantity float64, price float64, positionSide futu
 // @see https://binance-docs.github.io/apidocs/futures/cn/#trade-3
 // @returns /doc/order.js
 func BuyMarket(symbol string, quantity float64, positionSide futures.PositionSideType) (order *futures.CreateOrderResponse, err error) {
-	order, err = futuresClient.NewCreateOrderService().
-		Symbol(symbol).
-		Side(futures.SideTypeBuy).
-		PositionSide(positionSide).
-		Type(futures.OrderTypeMarket).
-		// TimeInForce(futures.TimeInForceTypeGTC).
-		Quantity(strconv.FormatFloat(quantity, 'f', -1, 64)).
-		Do(context.Background())
+	err = withLimiter(weightDefault, func() error {
+		order, err = futuresClient.NewCreateOrderService().
+			Symbol(symbol).
+			Side(futures.SideTypeBuy).
+			PositionSide(positionSide).
+			Type(futures.OrderTypeMarket).
+			// TimeInForce(futures.TimeInForceTypeGTC).
+			Quantity(strconv.FormatFloat(quantity, 'f', -1, 64)).
+			Do(context.Background())
+		return err
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -333,14 +386,17 @@ func BuyMarket(symbol string, quantity float64, positionSide futures.PositionSid
 // @see https://binance-docs.github.io/apidocs/futures/cn/#trade-3
 // @returns /doc/order.js
 func SellMarket(symbol string, quantity float64, positionSide futures.PositionSideType) (order *futures.CreateOrderResponse, err error) {
-	order, err = futuresClient.NewCreateOrderService().
-		Symbol(symbol).
-		Side(futures.SideTypeSell).
-		PositionSide(positionSide).
-		Type(futures.OrderTypeMarket).
-		// TimeInForce(futures.TimeInForceTypeGTC).
-		Quantity(strconv.FormatFloat(quantity, 'f', -1, 64)).
-		Do(context.Background())
+	err = withLimiter(weightDefault, func() error {
+		order, err = futuresClient.NewCreateOrderService().
+			Symbol(symbol).
+			Side(futures.SideTypeSell).
+			PositionSide(positionSide).
+			Type(futures.OrderTypeMarket).
+			// TimeInForce(futures.TimeInForceTypeGTC).
+			Quantity(strconv.FormatFloat(quantity, 'f', -1, 64)).
+			Do(context.Background())
+		return err
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -351,7 +407,10 @@ func SellMarket(symbol string, quantity float64, positionSide futures.PositionSi
 // 撤销订单
 // @see https://binance-docs.github.io/apidocs/futures/cn/#trade-6
 func CancelOrder(symbol string, orderId int64) (res *futures.CancelOrderResponse, err error) {
-	res, err = futuresClient.NewCancelOrderService().Symbol(symbol).OrderID(orderId).Do(context.Background())
+	err = withLimiter(weightDefault, func() error {
+		res, err = futuresClient.NewCancelOrderService().Symbol(symbol).OrderID(orderId).Do(context.Background())
+		return err
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -363,7 +422,10 @@ func CancelOrder(symbol string, orderId int64) (res *futures.CancelOrderResponse
 // @param Number 1-125
 // @see https://binance-docs.github.io/apidocs/futures/cn/#trade-10
 func SetLeverage(symbol string, leverage int) (res *futures.SymbolLeverage, err error) {
-	res, err = futuresClient.NewChangeLeverageService().Symbol(symbol).Leverage(leverage).Do(context.Background())
+	err = withLimiter(weightDefault, func() error {
+		res, err = futuresClient.NewChangeLeverageService().Symbol(symbol).Leverage(leverage).Do(context.Background())
+		return err
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -374,7 +436,10 @@ func SetLeverage(symbol string, leverage int) (res *futures.SymbolLeverage, err 
 // @param string symbol
 // @param futures.MarginType Isolated(逐仓), Crossed(全仓)
 func SetMarginType(symbol string, marginType futures.MarginType) (err error) {
-	err = futuresClient.NewChangeMarginTypeService().Symbol(symbol).MarginType(marginType).Do(context.Background())
+	err = withLimiter(weightDefault, func() error {
+		err = futuresClient.NewChangeMarginTypeService().Symbol(symbol).MarginType(marginType).Do(context.Background())
+		return err
+	})
 	if err != nil {
 		return err
 	}
@@ -400,7 +465,10 @@ func GetOrders(listOrderParams ListOrderParams) (res []*futures.Order, err error
 	if listOrderParams.Limit != 0 {
 		service = service.Limit(listOrderParams.Limit)
 	}
-	res, err = service.Do(context.Background())
+	err = withLimiter(weightDefault, func() error {
+		res, err = service.Do(context.Background())
+		return err
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -416,7 +484,10 @@ func GetOrder(orderParams OrderParams) (res *futures.Order, err error) {
 	if orderParams.OrderID != 0 {
 		service = service.OrderID(orderParams.OrderID)
 	}
-	res, err = service.Do(context.Background())
+	err = withLimiter(weightDefault, func() error {
+		res, err = service.Do(context.Background())
+		return err
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -427,7 +498,10 @@ func GetOrder(orderParams OrderParams) (res *futures.Order, err error) {
 // @see https://binance-docs.github.io/apidocs/futures/cn/#user_data-7
 func GetLimitStartTimeOrders(startTime int64) (res []*futures.Order, err error) {
 	service := futuresClient.NewListOrdersService()
-	res, err = service.StartTime(startTime).Do(context.Background())
+	err = withLimiter(weightDefault, func() error {
+		res, err = service.StartTime(startTime).Do(context.Background())
+		return err
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -441,7 +515,10 @@ func GetOpenOrder(symbols ...string) (res []*futures.Order, err error) {
 	if len(symbols) > 0 {
 		service = service.Symbol(symbols[0])
 	}
-	res, err = service.Do(context.Background())
+	err = withLimiter(weightOpenOrders, func() error {
+		res, err = service.Do(context.Background())
+		return err
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -451,7 +528,10 @@ func GetOpenOrder(symbols ...string) (res []*futures.Order, err error) {
 // 获取交易规则和交易对
 // @see https://binance-docs.github.io/apidocs/futures/cn/#0f3f2d5ee7
 func GetExchangeInfo() (res *futures.ExchangeInfo, err error) {
-	res, err = futuresClient.NewExchangeInfoService().Do(context.Background())
+	err = withLimiter(weightDefault, func() error {
+		res, err = futuresClient.NewExchangeInfoService().Do(context.Background())
+		return err
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -463,16 +543,19 @@ func GetExchangeInfo() (res *futures.ExchangeInfo, err error) {
 // @see https://binance-docs.github.io/apidocs/futures/cn/#trade-3
 // @returns /doc/order.js
 func OrderTakeProfit(symbol string, stopPrice float64, side futures.SideType, positionSide futures.PositionSideType) (order *futures.CreateOrderResponse, err error) {
-	order, err = futuresClient.NewCreateOrderService().
-		Symbol(symbol).
-		Side(side).
-		PositionSide(positionSide).
-		Type(futures.OrderType(futures.AlgoOrderTypeTakeProfitMarket)). // 止盈市价单
-		StopPrice(strconv.FormatFloat(stopPrice, 'f', -1, 64)).         // 触发价格
-		ClosePosition(true).                                            // 是否市价全平(和quantity参数互斥)
-		// Quantity(strconv.FormatFloat(quantity, 'f', -1, 64)).
-		// TimeInForce(binance.TimeInForceTypeGTC).
-		Do(context.Background())
+	err = withLimiter(weightDefault, func() error {
+		order, err = futuresClient.NewCreateOrderService().
+			Symbol(symbol).
+			Side(side).
+			PositionSide(positionSide).
+			Type(futures.OrderType(futures.AlgoOrderTypeTakeProfitMarket)). // 止盈市价单
+			StopPrice(strconv.FormatFloat(stopPrice, 'f', -1, 64)).         // 触发价格
+			ClosePosition(true).                                            // 是否市价全平(和quantity参数互斥)
+			// Quantity(strconv.FormatFloat(quantity, 'f', -1, 64)).
+			// TimeInForce(binance.TimeInForceTypeGTC).
+			Do(context.Background())
+		return err
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -484,16 +567,19 @@ func OrderTakeProfit(symbol string, stopPrice float64, side futures.SideType, po
 // @see https://binance-docs.github.io/apidocs/futures/cn/#trade-3
 // @returns /doc/order.js
 func OrderStopLoss(symbol string, stopPrice float64, side futures.SideType, positionSide futures.PositionSideType) (order *futures.CreateOrderResponse, err error) {
-	order, err = futuresClient.NewCreateOrderService().
-		Symbol(symbol).
-		Side(side).
-		PositionSide(positionSide).
-		Type(futures.OrderType(futures.AlgoOrderTypeStopMarket)). // 止损限价单
-		StopPrice(strconv.FormatFloat(stopPrice, 'f', -1, 64)).   // 触发价格
-		ClosePosition(true).                                      // 是否市价全平(和quantity参数互斥)
-		// Quantity(strconv.FormatFloat(quantity, 'f', -1, 64)).
-		// TimeInForce(binance.TimeInForceTypeGTC).
-		Do(context.Background())
+	err = withLimiter(weightDefault, func() error {
+		order, err = futuresClient.NewCreateOrderService().
+			Symbol(symbol).
+			Side(side).
+			PositionSide(positionSide).
+			Type(futures.OrderType(futures.AlgoOrderTypeStopMarket)). // 止损限价单
+			StopPrice(strconv.FormatFloat(stopPrice, 'f', -1, 64)).   // 触发价格
+			ClosePosition(true).                                      // 是否市价全平(和quantity参数互斥)
+			// Quantity(strconv.FormatFloat(quantity, 'f', -1, 64)).
+			// TimeInForce(binance.TimeInForceTypeGTC).
+			Do(context.Background())
+		return err
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -516,7 +602,10 @@ func GetFundingRate(params FundingRateParams) (res []*futures.PremiumIndex, err 
 	if params.Symbol != "" {
 		service = service.Symbol(params.Symbol)
 	}
-	res, err = service.Do(context.Background())
+	err = withLimiter(weightDefault, func() error {
+		res, err = service.Do(context.Background())
+		return err
+	})
 	return res, err
 }
 
@@ -538,7 +627,10 @@ func GetFundingRateHistory(params FundingRateParams) (res []*futures.FundingRate
 	if params.Limit != 0 {
 		service = service.Limit(params.Limit)
 	}
-	res, err = service.Do(context.Background())
+	err = withLimiter(weightDefault, func() error {
+		res, err = service.Do(context.Background())
+		return err
+	})
 	return res, err
 }
 
@@ -549,7 +641,10 @@ func GetOpenInterestHistory(symbol string, period string, limit int) (res []*fut
 	if limit != 0 {
 		service = service.Limit(limit)
 	}
-	res, err = service.Do(context.Background())
+	err = withLimiter(weightDefault, func() error {
+		res, err = service.Do(context.Background())
+		return err
+	})
 	if err != nil {
 		logs.Error(err)
 		return nil, err
@@ -563,7 +658,10 @@ func GetTopLongShortAccountRatio(symbol string, period string, limit int) (res [
 	if limit != 0 {
 		service = service.Limit(uint32(limit))
 	}
-	res, err = service.Do(context.Background())
+	err = withLimiter(weightDefault, func() error {
+		res, err = service.Do(context.Background())
+		return err
+	})
 	if err != nil {
 		logs.Error(err)
 		return nil, err
@@ -577,7 +675,10 @@ func GetTopLongShortPositionRatio(symbol string, period string, limit int) (res 
 	if limit != 0 {
 		service = service.Limit(uint32(limit))
 	}
-	res, err = service.Do(context.Background())
+	err = withLimiter(weightDefault, func() error {
+		res, err = service.Do(context.Background())
+		return err
+	})
 	if err != nil {
 		logs.Error(err)
 		return nil, err
@@ -591,7 +692,10 @@ func GetGlobalLongShortAccountRatio(symbol string, period string, limit int) (re
 	if limit != 0 {
 		service = service.Limit(limit)
 	}
-	res, err = service.Do(context.Background())
+	err = withLimiter(weightDefault, func() error {
+		res, err = service.Do(context.Background())
+		return err
+	})
 	if err != nil {
 		logs.Error(err)
 		return nil, err
@@ -605,7 +709,10 @@ func GetTakerLongShortRatio(symbol string, period string, limit int) (res []*fut
 	if limit != 0 {
 		service = service.Limit(uint32(limit))
 	}
-	res, err = service.Do(context.Background())
+	err = withLimiter(weightDefault, func() error {
+		res, err = service.Do(context.Background())
+		return err
+	})
 	if err != nil {
 		logs.Error(err)
 		return nil, err
@@ -619,7 +726,10 @@ func GetMarkPriceKlines(symbol string, interval string, limit int) (res []*futur
 	if limit != 0 {
 		service = service.Limit(limit)
 	}
-	res, err = service.Do(context.Background())
+	err = withLimiter(weightDefault, func() error {
+		res, err = service.Do(context.Background())
+		return err
+	})
 	if err != nil {
 		logs.Error(err)
 		return nil, err
@@ -633,7 +743,10 @@ func GetBasis(symbol string, contractType string, period string, limit int) (res
 	if limit > 0 {
 		service = service.Limit(uint32(limit))
 	}
-	res, err = service.Do(context.Background())
+	err = withLimiter(weightDefault, func() error {
+		res, err = service.Do(context.Background())
+		return err
+	})
 	if err != nil {
 		logs.Error(err)
 		return nil, err
@@ -697,11 +810,19 @@ func UpdateCoinByWs(systemConfig *models.Config, retryNum int64) {
 
 // websocket user data 使用
 func GetListenKey() (listenKey string, err error) {
-	return futuresClient.NewStartUserStreamService().Do(context.Background())
+	err = withLimiter(weightDefault, func() error {
+		listenKey, err = futuresClient.NewStartUserStreamService().Do(context.Background())
+		return err
+	})
+	return listenKey, err
 }
 
 func UpdateListenKey(listenKey string) (err error) {
-	return futuresClient.NewKeepaliveUserStreamService().ListenKey(listenKey).Do(context.Background())
+	err = withLimiter(weightDefault, func() error {
+		err = futuresClient.NewKeepaliveUserStreamService().ListenKey(listenKey).Do(context.Background())
+		return err
+	})
+	return err
 }
 
 // @see https://binance-docs.github.io/apidocs/futures/cn/#listenkey-user_stream

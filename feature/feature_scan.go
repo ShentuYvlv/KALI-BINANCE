@@ -29,6 +29,7 @@ type scanConfig struct {
 	UtcMinute      int
 	RetryMax       int
 	RetryBackoffMs int
+	RequestGapMs   int
 }
 
 type moverItem struct {
@@ -123,6 +124,7 @@ func getScanConfig() scanConfig {
 		UtcMinute:      5,
 		RetryMax:       4,
 		RetryBackoffMs: 800,
+		RequestGapMs:   0,
 	}
 	if v, err := config.Int("scan::enabled"); err == nil {
 		cfg.Enabled = v == 1
@@ -159,6 +161,9 @@ func getScanConfig() scanConfig {
 	}
 	if v, err := config.Int("scan::retry_backoff_ms"); err == nil && v > 0 {
 		cfg.RetryBackoffMs = v
+	}
+	if v, err := config.Int("scan::request_gap_ms"); err == nil && v >= 0 {
+		cfg.RequestGapMs = v
 	}
 	return cfg
 }
@@ -852,12 +857,20 @@ func withRetry(cfg scanConfig, fn func() error) error {
 		if attempt > 0 {
 			time.Sleep(backoffDuration(cfg, attempt))
 		}
+		sleepGap(cfg)
 		err = fn()
 		if err == nil {
 			return nil
 		}
 	}
 	return err
+}
+
+func sleepGap(cfg scanConfig) {
+	if cfg.RequestGapMs <= 0 {
+		return
+	}
+	time.Sleep(time.Duration(cfg.RequestGapMs) * time.Millisecond)
 }
 
 func backoffDuration(cfg scanConfig, attempt int) time.Duration {

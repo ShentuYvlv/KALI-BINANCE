@@ -10,6 +10,8 @@ api_key = ""
 api_secret = ""
 # 本地代理(如果不需要改为"")
 proxy_url = "http://127.0.0.1:7890"
+# REST API 每分钟限速(官方 2400，建议保守一点)
+rate_limit_per_min = 1800
 
 [database]
 # sqlite, mysql
@@ -90,3 +92,5 @@ utc_minute = 5
 # 重试与退避
 retry_max = 4
 retry_backoff_ms = 800
+# 每次请求之间的最小间隔(毫秒)，用于降低瞬时突发
+request_gap_ms = 120
