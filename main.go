@@ -83,6 +83,10 @@ func registerModels() {
 	orm.RegisterModel(new(models.FuturesOrder))
 	orm.RegisterModel(new(models.NotifyConfig))
 	orm.RegisterModel(new(models.NotifyMessage))
+	orm.RegisterModel(new(models.DailyScan))
+	orm.RegisterModel(new(models.DailyFeature))
+	orm.RegisterModel(new(models.FeatureTimeseries))
+	orm.RegisterModel(new(models.BacktestT1))
 	
 	setDriver(driver) // 设置数据库驱动
 	syncDb() // 同步数据库
@@ -123,6 +127,7 @@ func syncDb() {
 	models.EnsureListenSchema()
 	models.MigrateNoticeToListen()
 	models.EnsureNotifyMessageSchema()
+	models.EnsureDailyScanSchema()
 }
 
 func registerMiddlewares() {
@@ -308,6 +313,11 @@ func main() {
 
 			time.Sleep(time.Second * 90) // 90 秒更新一次
 		}
+	}()
+
+	// 每日涨跌幅榜扫描与回测
+	go func() {
+		feature.StartDailyScanScheduler()
 	}()
 	
 	// 监听套利情况

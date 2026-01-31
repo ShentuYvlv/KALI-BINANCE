@@ -151,6 +151,21 @@ func GetTickerPrice(symbol string) (res []*futures.SymbolPrice, err error) {
 	return res, err
 }
 
+// 24h价格变动统计(全量)
+// @see https://developers.binance.com/docs/zh-CN/derivatives/usds-margined-futures/market-data/24hr-Ticker-Price-Change-Statistics
+func Get24hPriceChangeStats(symbol string) (res []*futures.PriceChangeStats, err error) {
+	service := futuresClient.NewListPriceChangeStatsService()
+	if symbol != "" {
+		service = service.Symbol(symbol)
+	}
+	res, err = service.Do(context.Background())
+	if err != nil {
+		logs.Error(err)
+		return nil, err
+	}
+	return res, err
+}
+
 // 获取合约开仓量
 // @see https://developers.binance.com/docs/zh-CN/derivatives/usds-margined-futures/market-data/Open-Interest
 func GetOpenInterest(symbol string) (res *futures.OpenInterest, err error) {
@@ -603,6 +618,20 @@ func GetMarkPriceKlines(symbol string, interval string, limit int) (res []*futur
 	service := futuresClient.NewMarkPriceKlinesService().Symbol(symbol).Interval(interval)
 	if limit != 0 {
 		service = service.Limit(limit)
+	}
+	res, err = service.Do(context.Background())
+	if err != nil {
+		logs.Error(err)
+		return nil, err
+	}
+	return res, err
+}
+
+// 基差
+func GetBasis(symbol string, contractType string, period string, limit int) (res []*futures.Basis, err error) {
+	service := futuresClient.NewBasisService().Pair(symbol).ContractType(contractType).Period(period)
+	if limit > 0 {
+		service = service.Limit(uint32(limit))
 	}
 	res, err = service.Do(context.Background())
 	if err != nil {

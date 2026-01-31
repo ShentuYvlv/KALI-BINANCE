@@ -66,3 +66,27 @@ slack_channel_id = ""
 [external]
 # 外部链接
 links = [{"url": "url1", "title": "title1"}]
+
+[scan]
+# 1开启 0关闭
+enabled = 0
+# 启动时立即跑一次(测试用，生产建议关闭)
+run_on_start = 0
+# TopN
+top_n = 10
+# 最小成交额(USDT)
+min_quote_volume = 50000000
+# 并发数
+max_workers = 5
+# 时间周期
+period = "1d"
+# 历史窗口
+ts_limit = 30
+# 资金费率历史条数
+funding_limit = 30
+# UTC 调度时间
+utc_hour = 0
+utc_minute = 5
+# 重试与退避
+retry_max = 4
+retry_backoff_ms = 800
