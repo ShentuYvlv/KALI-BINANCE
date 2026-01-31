@@ -164,23 +164,184 @@
         </div>
       </div>
       <div class="kline-tools">
-        <div class="tool-group">
-          <div class="tool-title">绘图</div>
+        <div class="tool-stack">
           <button
-            v-for="tool in drawTools"
-            :key="tool.name"
             class="tool-icon-btn"
-            :class="{ active: activeTool === tool.name }"
-            :title="tool.label"
-            @click="activateTool(tool.name)"
+            :class="{ active: !activeTool }"
+            title="游标"
+            @click="activateTool('cursor')"
           >
-            <i :class="tool.icon" />
+            <svg class="tool-svg" viewBox="0 0 24 24">
+              <rect x="4.5" y="4.5" width="15" height="15" rx="2" />
+              <line x1="12" y1="7" x2="12" y2="17" />
+              <line x1="7" y1="12" x2="17" y2="12" />
+            </svg>
+          </button>
+          <el-popover
+            v-for="group in drawToolGroups"
+            :key="group.name"
+            placement="right-start"
+            trigger="click"
+            popper-class="tool-menu-pop"
+          >
+            <div class="tool-menu">
+              <button
+                v-for="tool in group.tools"
+                :key="tool.name"
+                class="tool-menu-item"
+                :title="tool.label"
+                @click="activateTool(tool.name)"
+              >
+                <i :class="tool.icon" class="tool-menu-icon" />
+                <span>{{ tool.label }}</span>
+              </button>
+            </div>
+            <button
+              class="tool-icon-btn"
+              :class="{ active: isGroupActive(group) }"
+              :title="group.title"
+              slot="reference"
+            >
+              <svg v-if="group.icon === 'trend'" class="tool-svg" viewBox="0 0 24 24">
+                <line x1="5" y1="17" x2="18" y2="6" />
+                <circle class="tool-dot" cx="5" cy="17" r="1.6" />
+                <circle class="tool-dot" cx="18" cy="6" r="1.6" />
+              </svg>
+              <svg v-else-if="group.icon === 'levels'" class="tool-svg" viewBox="0 0 24 24">
+                <line x1="4" y1="7" x2="20" y2="7" />
+                <circle class="tool-dot" cx="7" cy="7" r="1.4" />
+                <line x1="4" y1="12" x2="20" y2="12" />
+                <circle class="tool-dot" cx="12" cy="12" r="1.4" />
+                <line x1="4" y1="17" x2="20" y2="17" />
+                <circle class="tool-dot" cx="16" cy="17" r="1.4" />
+              </svg>
+              <svg v-else-if="group.icon === 'polygon'" class="tool-svg" viewBox="0 0 24 24">
+                <path d="M6 17L10 6L19 9L16 19Z" />
+                <circle class="tool-dot" cx="6" cy="17" r="1.2" />
+                <circle class="tool-dot" cx="10" cy="6" r="1.2" />
+                <circle class="tool-dot" cx="19" cy="9" r="1.2" />
+                <circle class="tool-dot" cx="16" cy="19" r="1.2" />
+              </svg>
+              <svg v-else-if="group.icon === 'multi'" class="tool-svg" viewBox="0 0 24 24">
+                <line x1="4" y1="8" x2="20" y2="8" />
+                <circle class="tool-dot" cx="14" cy="8" r="1.4" />
+                <line x1="4" y1="12" x2="20" y2="12" />
+                <circle class="tool-dot" cx="9" cy="12" r="1.4" />
+                <line x1="4" y1="16" x2="20" y2="16" />
+                <circle class="tool-dot" cx="17" cy="16" r="1.4" />
+              </svg>
+            </button>
+          </el-popover>
+          <button
+            class="tool-icon-btn"
+            :class="{ active: activeTool === 'curveLine' }"
+            title="曲线"
+            @click="activateTool('curveLine')"
+          >
+            <svg class="tool-svg" viewBox="0 0 24 24">
+              <path d="M4 16Q12 4 20 12" />
+            </svg>
+          </button>
+          <button
+            class="tool-icon-btn"
+            :class="{ active: activeTool === 'simpleTag' }"
+            title="文本"
+            @click="activateTool('simpleTag')"
+          >
+            <svg class="tool-svg" viewBox="0 0 24 24">
+              <line x1="6" y1="6" x2="18" y2="6" />
+              <line x1="12" y1="6" x2="12" y2="18" />
+            </svg>
+          </button>
+          <button class="tool-icon-btn" title="表情">
+            <svg class="tool-svg" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="8" />
+              <circle class="tool-dot" cx="9" cy="10" r="1.2" />
+              <circle class="tool-dot" cx="15" cy="10" r="1.2" />
+              <path d="M9 15c1.2 1 4.8 1 6 0" />
+            </svg>
           </button>
         </div>
-        <div class="tool-group">
-          <div class="tool-title">操作</div>
+        <div class="tool-divider" />
+        <div class="tool-stack">
+          <button
+            class="tool-icon-btn"
+            :class="{ active: activeTool === 'priceChangeMeasure' }"
+            title="测涨跌"
+            @click="activateTool('priceChangeMeasure')"
+          >
+            <svg class="tool-svg" viewBox="0 0 24 24">
+              <rect x="4.5" y="8" width="15" height="8" rx="2" />
+              <line x1="8" y1="8" x2="8" y2="16" />
+              <line x1="12" y1="8" x2="12" y2="16" />
+              <line x1="16" y1="8" x2="16" y2="16" />
+              <line x1="6.5" y1="10" x2="7.8" y2="10" />
+              <line x1="10.5" y1="12" x2="11.8" y2="12" />
+              <line x1="14.5" y1="14" x2="15.8" y2="14" />
+            </svg>
+          </button>
+          <button class="tool-icon-btn" title="放大" @click="zoomIn">
+            <svg class="tool-svg" viewBox="0 0 24 24">
+              <circle cx="11" cy="11" r="7" />
+              <line x1="11" y1="8" x2="11" y2="14" />
+              <line x1="8" y1="11" x2="14" y2="11" />
+              <line x1="16" y1="16" x2="21" y2="21" />
+            </svg>
+          </button>
+          <button
+            class="tool-icon-btn"
+            :class="{ active: overlayMode !== 'normal' }"
+            :title="overlayModeTitle()"
+            @click="cycleOverlayMode"
+          >
+            <svg class="tool-svg" viewBox="0 0 24 24">
+              <path d="M7 5v6a5 5 0 0 0 10 0V5" />
+              <line x1="7" y1="5" x2="7" y2="8" />
+              <line x1="17" y1="5" x2="17" y2="8" />
+            </svg>
+          </button>
+          <button
+            class="tool-icon-btn"
+            :class="{ active: overlayLocked }"
+            title="绘图锁定"
+            @click="toggleOverlayLock"
+          >
+            <svg class="tool-svg" viewBox="0 0 24 24">
+              <path d="M5 17l2 2 10-10-2-2z" />
+              <rect x="13.5" y="13.5" width="6" height="5" rx="1.2" />
+              <path d="M14.5 13.5V12a2 2 0 0 1 4 0v1.5" />
+            </svg>
+          </button>
+          <button
+            class="tool-icon-btn"
+            :class="{ active: chartLocked }"
+            title="图表锁定"
+            @click="toggleChartLock"
+          >
+            <svg class="tool-svg" viewBox="0 0 24 24">
+              <rect x="6.5" y="10.5" width="11" height="9" rx="2" />
+              <path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5" />
+            </svg>
+          </button>
+          <button
+            class="tool-icon-btn"
+            :class="{ active: !overlaysVisible }"
+            :title="overlaysVisible ? '隐藏绘图' : '显示绘图'"
+            @click="toggleOverlaysVisible"
+          >
+            <svg class="tool-svg" viewBox="0 0 24 24">
+              <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6z" />
+              <circle class="tool-dot" cx="12" cy="12" r="2.4" />
+            </svg>
+          </button>
           <button class="tool-icon-btn" title="清除全部" @click="clearOverlays">
-            <i class="el-icon-delete" />
+            <svg class="tool-svg" viewBox="0 0 24 24">
+              <path d="M5 7h14" />
+              <path d="M9 7V5h6v2" />
+              <rect x="7" y="7" width="10" height="12" rx="1.5" />
+              <line x1="10" y1="11" x2="10" y2="17" />
+              <line x1="14" y1="11" x2="14" y2="17" />
+            </svg>
           </button>
         </div>
       </div>
@@ -219,8 +380,106 @@
 </template>
 
 <script>
-import { init, dispose } from 'klinecharts'
+import { init, dispose, registerOverlay } from 'klinecharts'
 import { getFuturesDepth, getFuturesKline, getFuturesTrades } from '@/api/trade'
+
+let customOverlaysRegistered = false
+
+const registerCustomOverlays = () => {
+  if (customOverlaysRegistered) return
+  registerOverlay({
+    name: 'priceChangeMeasure',
+    totalStep: 3,
+    needDefaultPointFigure: true,
+    needDefaultXAxisFigure: true,
+    needDefaultYAxisFigure: true,
+    createPointFigures: ({ chart, coordinates, overlay }) => {
+      if (!coordinates || coordinates.length < 2 || !overlay || !overlay.points || overlay.points.length < 2) {
+        return []
+      }
+      const start = overlay.points[0]
+      const end = overlay.points[1]
+      if (start.value === undefined || end.value === undefined) {
+        return []
+      }
+      const precision = chart?.getSymbol?.()?.pricePrecision ?? 2
+      const diff = end.value - start.value
+      const percent = start.value ? (diff / start.value) * 100 : 0
+      const sign = diff >= 0 ? '+' : ''
+      const formatValue = (value) => {
+        const fixed = Number(value).toFixed(precision)
+        const withThousands = chart.getThousandsSeparator().format(fixed)
+        return chart.getDecimalFold().format(withThousands)
+      }
+      const text = `${sign}${formatValue(diff)} (${sign}${percent.toFixed(2)}%)`
+      const color = diff >= 0 ? '#16a34a' : '#ef4444'
+      return [
+        {
+          type: 'line',
+          attrs: { coordinates },
+          styles: { color },
+        },
+        {
+          type: 'text',
+          ignoreEvent: true,
+          attrs: {
+            x: coordinates[1].x + 6,
+            y: coordinates[1].y - 6,
+            text,
+            align: 'left',
+            baseline: 'bottom',
+          },
+          styles: {
+            color: '#e5e7eb',
+            backgroundColor: diff >= 0 ? 'rgba(22, 163, 74, 0.2)' : 'rgba(239, 68, 68, 0.2)',
+            paddingLeft: 6,
+            paddingRight: 6,
+            paddingTop: 4,
+            paddingBottom: 4,
+            borderRadius: 4,
+            size: 12,
+          },
+        },
+      ]
+    },
+  })
+  registerOverlay({
+    name: 'curveLine',
+    totalStep: 3,
+    needDefaultPointFigure: true,
+    needDefaultXAxisFigure: true,
+    needDefaultYAxisFigure: true,
+    createPointFigures: ({ coordinates }) => {
+      if (!coordinates || coordinates.length < 2) {
+        return []
+      }
+      const [p0, p1] = coordinates
+      const dx = p1.x - p0.x
+      const dy = p1.y - p0.y
+      const length = Math.max(1, Math.hypot(dx, dy))
+      const nx = -dy / length
+      const ny = dx / length
+      const offset = Math.min(60, Math.max(18, length * 0.15))
+      const cx = (p0.x + p1.x) / 2 + nx * offset
+      const cy = (p0.y + p1.y) / 2 + ny * offset
+      const steps = 16
+      const points = []
+      for (let i = 0; i <= steps; i += 1) {
+        const t = i / steps
+        const x = (1 - t) * (1 - t) * p0.x + 2 * (1 - t) * t * cx + t * t * p1.x
+        const y = (1 - t) * (1 - t) * p0.y + 2 * (1 - t) * t * cy + t * t * p1.y
+        points.push({ x, y })
+      }
+      return [
+        {
+          type: 'line',
+          attrs: { coordinates: points },
+        },
+      ]
+    },
+  })
+  customOverlaysRegistered = true
+}
 
 export default {
   name: 'FuturesKline',
@@ -235,6 +494,10 @@ export default {
       wsDepth: null,
       wsTrades: null,
       activeTool: '',
+      overlayMode: 'normal',
+      overlayLocked: false,
+      overlaysVisible: true,
+      chartLocked: false,
       timezone: 'Asia/Shanghai',
       settings: {
         showGrid: true,
@@ -311,22 +574,55 @@ export default {
         { label: 'UTC', value: 'UTC' },
         { label: 'America/New_York', value: 'America/New_York' },
       ],
-      drawTools: [
-        { label: '游标', name: 'cursor', icon: 'el-icon-view' },
-        { label: '趋势线', name: 'straightLine', icon: 'el-icon-edit' },
-        { label: '射线', name: 'rayLine', icon: 'el-icon-arrow-right' },
-        { label: '线段', name: 'segment', icon: 'el-icon-minus' },
-        { label: '水平线', name: 'horizontalStraightLine', icon: 'el-icon-more' },
-        { label: '垂直线', name: 'verticalStraightLine', icon: 'el-icon-menu' },
-        { label: '平行线', name: 'parallelStraightLine', icon: 'el-icon-rank' },
-        { label: '价格通道', name: 'priceChannelLine', icon: 'el-icon-tickets' },
-        { label: '斐波那契', name: 'fibonacciLine', icon: 'el-icon-share' },
-        { label: '标注', name: 'simpleAnnotation', icon: 'el-icon-info' },
-        { label: '标签', name: 'simpleTag', icon: 'el-icon-document' },
+      drawToolGroups: [
+        {
+          name: 'trend',
+          title: '趋势线',
+          icon: 'trend',
+          tools: [
+            { label: '直线', name: 'straightLine', icon: 'el-icon-edit' },
+            { label: '射线', name: 'rayLine', icon: 'el-icon-arrow-right' },
+            { label: '线段', name: 'segment', icon: 'el-icon-minus' },
+          ],
+        },
+        {
+          name: 'levels',
+          title: '水平/垂直线',
+          icon: 'levels',
+          tools: [
+            { label: '水平直线', name: 'horizontalStraightLine', icon: 'el-icon-more' },
+            { label: '水平射线', name: 'horizontalRayLine', icon: 'el-icon-more' },
+            { label: '水平线段', name: 'horizontalSegment', icon: 'el-icon-more' },
+            { label: '垂直直线', name: 'verticalStraightLine', icon: 'el-icon-menu' },
+            { label: '垂直射线', name: 'verticalRayLine', icon: 'el-icon-menu' },
+            { label: '垂直线段', name: 'verticalSegment', icon: 'el-icon-menu' },
+          ],
+        },
+        {
+          name: 'channel',
+          title: '通道/平行线',
+          icon: 'polygon',
+          tools: [
+            { label: '平行直线', name: 'parallelStraightLine', icon: 'el-icon-rank' },
+            { label: '价格通道', name: 'priceChannelLine', icon: 'el-icon-tickets' },
+            { label: '斐波那契', name: 'fibonacciLine', icon: 'el-icon-share' },
+          ],
+        },
+        {
+          name: 'annotation',
+          title: '标注/标签',
+          icon: 'multi',
+          tools: [
+            { label: '价格线', name: 'priceLine', icon: 'el-icon-minus' },
+            { label: '标注', name: 'simpleAnnotation', icon: 'el-icon-info' },
+            { label: '标签', name: 'simpleTag', icon: 'el-icon-document' },
+          ],
+        },
       ],
     }
   },
   mounted() {
+    registerCustomOverlays()
     this.symbol = (this.$route.query.symbol || '').toUpperCase()
     this.tickSize = this.$route.query.tickSize || ''
     this.stepSize = this.$route.query.stepSize || ''
@@ -349,6 +645,15 @@ export default {
     }
   },
   methods: {
+    overlayModeTitle() {
+      if (this.overlayMode === 'weak_magnet') return '磁吸: 弱'
+      if (this.overlayMode === 'strong_magnet') return '磁吸: 强'
+      return '磁吸: 关闭'
+    },
+    isGroupActive(group) {
+      if (!group || !group.tools) return false
+      return group.tools.some(tool => tool.name === this.activeTool)
+    },
     goBack() {
       this.$router.back()
     },
@@ -776,16 +1081,81 @@ export default {
       }
     },
     activateTool(name) {
+      if (!this.chart) {
+        return
+      }
       if (name === 'cursor') {
         this.activeTool = ''
         return
       }
       this.activeTool = name
-      this.chart.createOverlay({ name })
+      this.$nextTick(() => {
+        if (!this.chart) return
+        try {
+          this.chart.createOverlay({
+            name,
+            lock: this.overlayLocked,
+            mode: this.overlayMode,
+            visible: this.overlaysVisible,
+          })
+        } catch (e) {
+          // ignore create overlay errors to avoid blocking UI
+        }
+      })
+    },
+    zoomIn() {
+      if (!this.chart) return
+      const barSpace = this.chart.getBarSpace()?.bar ?? 10
+      const next = Math.min(50, barSpace + 2)
+      this.chart.setBarSpace(next)
     },
     clearOverlays() {
       this.chart.removeOverlay()
       this.activeTool = ''
+    },
+    cycleOverlayMode() {
+      const modes = ['normal', 'weak_magnet', 'strong_magnet']
+      const idx = modes.indexOf(this.overlayMode)
+      const next = idx === -1 ? 0 : (idx + 1) % modes.length
+      this.overlayMode = modes[next]
+      this.applyOverlaySettings()
+    },
+    toggleOverlayLock() {
+      this.overlayLocked = !this.overlayLocked
+      this.applyOverlaySettings()
+    },
+    toggleOverlaysVisible() {
+      this.overlaysVisible = !this.overlaysVisible
+      this.applyOverlayVisibility()
+    },
+    toggleChartLock() {
+      if (!this.chart) return
+      this.chartLocked = !this.chartLocked
+      this.chart.setScrollEnabled(!this.chartLocked)
+      this.chart.setZoomEnabled(!this.chartLocked)
+    },
+    applyOverlaySettings() {
+      if (!this.chart) return
+      const overlays = this.chart.getOverlays() || []
+      overlays.forEach((overlay) => {
+        if (!overlay || !overlay.id) return
+        this.chart.overrideOverlay({
+          id: overlay.id,
+          lock: this.overlayLocked,
+          mode: this.overlayMode,
+        })
+      })
+    },
+    applyOverlayVisibility() {
+      if (!this.chart) return
+      const overlays = this.chart.getOverlays() || []
+      overlays.forEach((overlay) => {
+        if (!overlay || !overlay.id) return
+        this.chart.overrideOverlay({
+          id: overlay.id,
+          visible: this.overlaysVisible,
+        })
+      })
     },
     downloadSnapshot() {
       const url = this.chart.getConvertPictureUrl(true, 'png', '#0f1115')
@@ -1343,11 +1713,15 @@ export default {
 }
 
 .kline-tools {
-  width: 56px;
-  background: #0d1117;
+  width: 48px;
+  background: #0b0f14;
   border-right: 1px solid #1b2230;
-  padding: 10px 8px;
+  padding: 10px 6px;
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
 }
 
 .kline-orderbook .side-section {
@@ -1716,46 +2090,103 @@ export default {
   }
 }
 
-.tool-group {
-  margin-bottom: 14px;
+.tool-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
 }
 
-.tool-group + .tool-group {
-  border-top: 1px solid #1b2230;
-  padding-top: 10px;
+.tool-divider {
+  width: 26px;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.12);
+  margin: 8px 0;
 }
 
-.tool-title {
-  font-size: 10px;
-  color: #6d7a8d;
-  margin-bottom: 6px;
-  text-align: center;
+.tool-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px 4px;
+  min-width: 180px;
+  background: #0f1720;
+}
+
+.tool-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #cbd5e1;
+  cursor: pointer;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.tool-menu-item:hover {
+  background: rgba(148, 163, 184, 0.12);
+  color: #e2e8f0;
+}
+
+.tool-menu-icon {
+  font-size: 14px;
+  color: #94a3b8;
+}
+
+.tool-menu-item:hover .tool-menu-icon {
+  color: #e2e8f0;
+}
+
+:deep(.tool-menu-pop) {
+  padding: 0;
+  border-radius: 10px;
+  border: 1px solid #1f2a37;
+  box-shadow: 0 10px 30px rgba(2, 6, 23, 0.6);
+  background: #0f1720;
 }
 
 .tool-icon-btn {
-  width: 100%;
+  width: 36px;
   height: 36px;
-  border: 1px solid #263041;
-  background: #131a24;
-  color: #a6b2c2;
-  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: #8b95a7;
+  border-radius: 6px;
   font-size: 16px;
   cursor: pointer;
-  margin-bottom: 6px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
 }
 
 .tool-icon-btn:hover {
-  border-color: #365072;
-  color: #d5dae2;
+  background: rgba(255, 255, 255, 0.05);
+  color: #e5e7eb;
 }
 .tool-icon-btn.active {
-  background: #16253a;
-  color: #4fd3a8;
-  border-color: #2b7a5f;
+  background: rgba(255, 255, 255, 0.12);
+  color: #e5e7eb;
+}
+
+.tool-svg {
+  width: 20px;
+  height: 20px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.tool-dot {
+  fill: currentColor;
+  stroke: none;
 }
 
 .kline-chart-wrap {

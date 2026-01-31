@@ -105,7 +105,12 @@
             min-width="120"
           >
             <template slot-scope="scope">
-              {{ scope.row.symbol }}
+              <a
+                class="symbol-link"
+                :href="buildKlineHref(scope.row)"
+                target="_blank"
+                rel="noopener"
+              >{{ scope.row.symbol }}</a>
             </template>
           </el-table-column>
           <el-table-column
@@ -240,7 +245,7 @@
           <el-table-column
             :label="$t('table.actions')"
             align="center"
-            min-width="360"
+            min-width="280"
             class-name="small-padding fixed-width"
           >
             <template slot-scope="{row}">
@@ -250,12 +255,6 @@
                   size="mini"
                   @click="openConfigDrawer(row)"
                 >{{ $t('table.edit') }}
-                </el-button>
-                <el-button
-                  type="warning"
-                  size="mini"
-                  @click="openKlinePage(row)"
-                >{{ $t('trade.kline') }}
                 </el-button>
                 <el-button
                   type="success"
@@ -1077,6 +1076,13 @@
   gap: 6px;
   white-space: nowrap;
 }
+.symbol-link {
+  color: #409eff;
+  text-decoration: none;
+}
+.symbol-link:hover {
+  text-decoration: underline;
+}
 </style>
 
 <script>
@@ -1698,7 +1704,10 @@ export default {
       this.insightSymbol = row.symbol
       this.insightVisible = true
     },
-    openKlinePage(row) {
+    buildKlineHref(row) {
+      if (!row) {
+        return ''
+      }
       const routeData = this.$router.resolve({
         path: '/futures/symbols/kline',
         query: {
@@ -1707,7 +1716,7 @@ export default {
           stepSize: row.stepSize,
         },
       })
-      window.open(routeData.href, '_blank')
+      return routeData.href
     },
     async applyDrawerConfig() {
       if (!this.drawerTarget) {
